@@ -1,0 +1,39 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch index.ts",
+    "format": "prettier --write .",
+    "migrate": "dotenvx run -- node-pg-migrate --migrations-dir=./config/db/migrations",
+    "migrate:create": "dotenvx run -- node-pg-migrate -m ./config/db/migrations -j sql create",
+    "migrate:up": "dotenvx run -- node-pg-migrate -m ./config/db/migrations up",
+    "migrate:down": "dotenvx run -- node-pg-migrate -m ./config/db/migrations down",
+    "debug:env": "dotenvx run -f .env -- node -e 'console.log(process.env)'"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.33.0",
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.30.2",
+    "prettier": "3.4.2",
+    "tsx": "^4.19.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@bull-board/api": "^6.7.1",
+    "@bull-board/express": "^6.7.1",
+    "@mendable/firecrawl-js": "^1.15.5",
+    "@workspace/db": "workspace:*",
+    "bullmq": "^5.34.10",
+    "cheerio": "^1.0.0",
+    "drizzle-orm": "^0.38.4",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "pg": "^8.13.1"
+  }
+}
