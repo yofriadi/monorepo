@@ -3,7 +3,6 @@ import { sql } from "drizzle-orm"
 
 export const watchScraping = pgSchema("watch_scraping");
 
-
 export const pgmigrations = pgTable("pgmigrations", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
@@ -11,7 +10,10 @@ export const pgmigrations = pgTable("pgmigrations", {
 });
 
 export const messageQueue = pgTable("message_queue", {
-	id: text().default(typeid_generate_text(\'messagequeue\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('messagequeue'::text)`)
+    .primaryKey()
+    .notNull(),
 	topic: varchar({ length: 255 }).notNull(),
 	payload: jsonb().notNull(),
 	status: varchar({ length: 10 }).default('pending').notNull(),
@@ -24,7 +26,10 @@ export const messageQueue = pgTable("message_queue", {
 ]);
 
 export const brandsInWatchScraping = watchScraping.table("brands", {
-	id: text().default(typeid_generate_text(\'brand\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('brand'::text)`)
+    .primaryKey()
+    .notNull(),
 	name: varchar({ length: 50 }).notNull(),
 	altName: text("alt_name"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -36,7 +41,10 @@ export const brandsInWatchScraping = watchScraping.table("brands", {
 ]);
 
 export const modelsInWatchScraping = watchScraping.table("models", {
-	id: text().default(typeid_generate_text(\'model\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('model'::text)`)
+    .primaryKey()
+    .notNull(),
 	brandId: text("brand_id").notNull(),
 	name: varchar({ length: 50 }).notNull(),
 	altName: text("alt_name"),
@@ -55,7 +63,10 @@ export const modelsInWatchScraping = watchScraping.table("models", {
 ]);
 
 export const productsInWatchScraping = watchScraping.table("products", {
-	id: text().default(typeid_generate_text(\'product\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('product'::text)`)
+    .primaryKey()
+    .notNull(),
 	modelId: text("model_id").notNull(),
 	referenceNumber: varchar("reference_number", { length: 50 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -74,7 +85,10 @@ export const productsInWatchScraping = watchScraping.table("products", {
 ]);
 
 export const sourcesInWatchScraping = watchScraping.table("sources", {
-	id: text().default(typeid_generate_text(\'source\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('source'::text)`)
+    .primaryKey()
+    .notNull(),
 	productId: text("product_id").notNull(),
 	platform: varchar({ length: 50 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -91,15 +105,21 @@ export const sourcesInWatchScraping = watchScraping.table("sources", {
 ]);
 
 export const coefficients = pgTable("coefficients", {
-	id: text().default(typeid_generate_text(\'coefficient\'::text)).notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('coefficient'::text)`)
+    .primaryKey()
+    .notNull(),
 	parameter: varchar({ length: 50 }).primaryKey().notNull(),
 	value: numeric({ precision: 12, scale:  6 }).notNull(),
-}, (table) => [
+}, () => [
 	check("coefficients_id_check", sql`CHECK (typeid_check_text(id, 'coefficient'::text`),
 ]);
 
 export const snapshotsInWatchScraping = watchScraping.table("snapshots", {
-	id: text().default(typeid_generate_text(\'snapshot\'::text)).primaryKey().notNull(),
+	id: text('id')
+    .default(sql`typeid_generate_text('snapshot'::text)`)
+    .primaryKey()
+    .notNull(),
 	sourceId: text("source_id"),
 	parentId: text("parent_id"),
 	url: text().notNull(),

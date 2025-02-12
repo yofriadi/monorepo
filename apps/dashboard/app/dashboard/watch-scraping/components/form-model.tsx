@@ -29,8 +29,9 @@ import {
 import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast";
 import { getQueryClient } from '@/lib/providers/get-query-client'
-import { useSuspenseQuery, useMutation } from '@tanstack/react-query';
-import { Model, modelOptions, createModelMutationConfig } from "../queries/model";
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Model, getModels, createModel } from "../actions/model";
+import { QUERY_KEY_GET_MODELS, MUTATION_KEY_CREATE_MODEL } from "@/constants/query-key";
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -46,40 +47,42 @@ interface FormModelProps {
 }
 
 export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
-  const { data: models = [] } = useSuspenseQuery(modelOptions(brandId));
-  const [showModelAltNameInput, setShowModelAltNameInput] = useState(false);
-  const [isModelNameInputDisabled, setModelNameInputDisabled] = useState(false);
-  const [isResetDisabled, setIsResetDisabled] = useState(true);
-  const [filteredOptions, setFilteredOptions] = useState<Model[]>(models);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = getQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      altName: "",
-    },
+  const [showModelAltNameInput, setShowModelAltNameInput] = useState(false);
+  const [isModelNameInputDisabled, setModelNameInputDisabled] = useState(false);
+  const [isResetDisabled, setIsResetDisabled] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const { data: models = [], isLoading } = useQuery({
+    queryKey: [QUERY_KEY_GET_MODELS, brandId],
+    queryFn: () => getModels(brandId),
+    enabled: isDropdownOpen,
   });
 
-  useEffect(() => {
-    setFilteredOptions(models);
-  }, [models]);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: "", altName: "" },
+  });
 
-  const createModel = useMutation({
-    ...createModelMutationConfig,
-    onSuccess: (model) => {
-      queryClient.invalidateQueries({ queryKey: ['models', brandId] });
+  const createModelMutation = useMutation({
+    mutationKey: [MUTATION_KEY_CREATE_MODEL],
+    mutationFn: createModel,
+    onSuccess: (newModel) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY_GET_MODELS, brandId] });
+
       toast({
         title: "Success",
         description: "Model created successfully",
       });
-      if (model?.id) {
-        setModelId(model.id);
+
+      if (newModel?.id) {
+        setModelId(newModel.id);
         setModelNameInputDisabled(true);
       }
+
       setDialogOpen(false);
     },
     onError: (error) => {
@@ -98,20 +101,9 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
     setIsResetDisabled(isFormEmpty);
   }, [formValues]);
 
-  const handleToggleDropdown = async (newIsOpen: boolean) => {
-    if (newIsOpen && !models.length) {
-      await queryClient.fetchQuery(modelOptions(brandId));
-    }
-    setIsDropdownOpen(newIsOpen);
-  };
 
   const handleInputChange = (value: string) => {
     form.setValue("name", value);
-    setFilteredOptions(
-      models.filter((option) =>
-        option.name.toLowerCase().includes(value.toLowerCase())
-      )
-    );
     setShowModelAltNameInput(!!value);
     setModelNameInputDisabled(false);
   };
@@ -130,11 +122,10 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
     setShowModelAltNameInput(false);
     setModelNameInputDisabled(false);
     setIsResetDisabled(true);
-    setFilteredOptions(models);
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createModel.mutate({
+    createModelMutation.mutate({
       brandId,
       name: values.name,
       altName: values.altName,
@@ -155,14 +146,14 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
               <FormControl>
                 <InputDropdown<Model>
                   isOpen={isDropdownOpen}
-                  onToggle={handleToggleDropdown}
+                  onToggle={setIsDropdownOpen}
                   options={models}
-                  filteredOptions={filteredOptions}
                   onSelectOption={handleSelectOption}
                   onInputChange={handleInputChange}
                   placeholder="Type to create Model Name"
                   value={field.value}
                   isDisabled={isModelNameInputDisabled}
+                  isLoading={isLoading}
                 />
               </FormControl>
               {(!modelId && !showModelAltNameInput) && (

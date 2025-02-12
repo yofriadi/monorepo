@@ -10,9 +10,7 @@ interface InputDropdownProps<T extends { id: string }> {
   isOpen: boolean
   onToggle: (isOpen: boolean) => void
   options: T[]
-  filteredOptions: T[]
   isLoading?: boolean
-  error: string
   onSelectOption: (option: T) => void
   onInputChange: (value: string) => void
   placeholder?: string
@@ -37,9 +35,8 @@ interface InputDropdownComponent {
 const InputDropdown: InputDropdownComponent = <T extends { id: string }>({
   isOpen,
   onToggle,
-  filteredOptions,
+  options,
   isLoading,
-  error,
   onSelectOption,
   onInputChange,
   placeholder = "Type or select...",
@@ -89,12 +86,10 @@ const InputDropdown: InputDropdownComponent = <T extends { id: string }>({
         <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-auto bg-white border border-gray-300 rounded-md shadow-lg">
           {isLoading ? (
             <li className="px-4 py-2 text-muted-foreground">Loading...</li>
-          ) : error ? (
-            <li className="px-4 py-2 text-destructive">{error}</li>
-          ) : filteredOptions.length === 0 ? (
+          ) : options.length === 0 ? (
             <li className="px-4 py-2 text-muted-foreground">No options found</li>
           ) : (
-            filteredOptions.map((option) => (
+            options.map((option) => (
               <li
                 key={option[optionKey] as string}
                 onClick={() => onSelectOption(option)}
