@@ -27,9 +27,9 @@ import {
 } from "@workspace/ui/components/dialog";
 import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast"
-import { getQueryClient } from '@/lib/providers/get-query-client'
-import { useSuspenseQuery, useMutation } from '@tanstack/react-query'
-import { Product, productOptions, createProductMutationConfig } from "../queries/product";
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { Product, getProducts, createProduct } from "../actions/product";
+import { QUERY_KEY_GET_PRODUCTS, MUTATION_KEY_CREATE_PRODUCT } from "@/constants/query-key";
 
 const formSchema = z.object({
   referenceNumber: z.string().min(3, {
@@ -44,38 +44,38 @@ interface FormProductProps {
 }
 
 export function FormProduct({ modelId, productId, setProductId }: FormProductProps) {
-  const { data: products = [] } = useSuspenseQuery(productOptions(modelId));
+  const { toast } = useToast();
+
   const [isProductNameInputDisabled, setProductNameInputDisabled] = useState(false);
   const [isResetDisabled, setIsResetDisabled] = useState(true);
-  const [filteredOptions, setFilteredOptions] = useState<Product[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = getQueryClient();
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: [QUERY_KEY_GET_PRODUCTS, modelId],
+    queryFn: () => getProducts(modelId),
+    enabled: isDropdownOpen,
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      referenceNumber: "",
-    },
+    defaultValues: { referenceNumber: "" },
   });
 
-  useEffect(() => {
-    setFilteredOptions(products);
-  }, [products]);
-
-  const createProduct = useMutation({
-    ...createProductMutationConfig,
+  const createProductMutation = useMutation({
+    mutationKey: [MUTATION_KEY_CREATE_PRODUCT],
+    mutationFn: createProduct,
     onSuccess: (product) => {
-      queryClient.invalidateQueries({ queryKey: ['models', modelId] });
       toast({
         title: "Success",
         description: "Product created successfully",
       });
+
       if (product?.id) {
         setProductId(product.id);
         setProductNameInputDisabled(true);
       }
+
       setDialogOpen(false);
     },
     onError: (error) => {
@@ -94,20 +94,8 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
     setIsResetDisabled(isFormEmpty);
   }, [formValues]);
 
-  const handleToggleDropdown = async (newIsOpen: boolean) => {
-    if (newIsOpen && !products.length) {
-      await queryClient.fetchQuery(productOptions(modelId));
-    }
-    setIsDropdownOpen(newIsOpen);
-  };
-
   const handleInputChange = (value: string) => {
     form.setValue("referenceNumber", value);
-    setFilteredOptions(
-      products.filter((option) =>
-        option.referenceNumber.toLowerCase().includes(value.toLowerCase())
-      )
-    );
     setProductNameInputDisabled(false);
   };
 
@@ -123,11 +111,10 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
     setProductId("");
     setProductNameInputDisabled(false);
     setIsResetDisabled(true);
-    setFilteredOptions(products);
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createProduct.mutate({
+    createProductMutation.mutate({
       modelId,
       referenceNumber: values.referenceNumber,
     });
@@ -148,15 +135,15 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
               <FormControl>
                 <InputDropdown<Product>
                   isOpen={isDropdownOpen}
-                  onToggle={handleToggleDropdown}
+                  onToggle={setIsDropdownOpen}
                   options={products}
-                  filteredOptions={filteredOptions}
                   onSelectOption={handleSelectOption}
                   onInputChange={handleInputChange}
                   placeholder="Type to create new Product"
                   value={field.value}
                   isDisabled={isProductNameInputDisabled}
                   optionLabel="referenceNumber"
+                  isLoading={isLoading}
                 />
               </FormControl>
               {!productId && (

@@ -28,8 +28,7 @@ import { Button } from "@workspace/ui/components/button";
 import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast"
 import { useMutation } from '@tanstack/react-query'
-import { getQueryClient } from '@/lib/providers/get-query-client'
-import { createSourceMutationConfig } from "../queries/source";
+import { createSource } from "../actions/source";
 
 const formSchema = z.object({
   url: z.string().url(),
@@ -37,21 +36,17 @@ const formSchema = z.object({
 
 export function FormSource({ productId }: { productId: string }) {
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const queryClient = getQueryClient();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      url: "",
-    },
+    defaultValues: { url: "" },
     mode: "onChange",
   });
 
-  const createSource = useMutation({
-    ...createSourceMutationConfig,
+  const createSourceMutation = useMutation({
+    mutationFn: createSource,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['source'] });
       toast({
         title: "Success",
         description: "Source created successfully and scraping started",
@@ -68,7 +63,7 @@ export function FormSource({ productId }: { productId: string }) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createSource.mutate({ productId, url: values.url });
+    createSourceMutation.mutate({ productId, url: values.url });
     setDialogOpen(false);
   }
 

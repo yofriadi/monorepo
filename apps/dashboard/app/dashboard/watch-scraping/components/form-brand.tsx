@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSuspenseQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from "react-hook-form";
 import { useFormStatus } from "react-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +29,9 @@ import {
 } from "@workspace/ui/components/dialog";
 import { getQueryClient } from '@/lib/providers/get-query-client'
 import ActionButton from "@workspace/ui/components/prismui/action-button";
-import { brandOptions, createBrandMutationConfig, type Brand } from "../queries/brand";
 import { useToast } from "@workspace/ui/hooks/use-toast";
+import { type Brand, getBrands, createBrand } from "../actions/brand"
+import { QUERY_KEY_GET_BRANDS, MUTATION_KEY_CREATE_BRAND } from '@/constants/query-key'
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -40,20 +41,26 @@ const formSchema = z.object({
 });
 
 interface FormBrandProps {
+  initialData: Brand[];
   brandId: string;
   setBrandId: (brandId: string) => void;
 }
 
-export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
-  const { data: brands = [] } = useSuspenseQuery(brandOptions);
+export function FormBrand({ initialData, brandId, setBrandId }: FormBrandProps) {
+  const { toast } = useToast();
+  const queryClient = getQueryClient();
+
+  const { data: brands = [] } = useQuery({
+    queryKey: [QUERY_KEY_GET_BRANDS],
+    queryFn: getBrands,
+    initialData,
+  });
+
   const [showBrandAltNameInput, setShowBrandAltNameInput] = useState(false);
   const [isBrandNameInputDisabled, setBrandNameInputDisabled] = useState(false);
   const [isResetDisabled, setIsResetDisabled] = useState(true);
-  const [filteredOptions, setFilteredOptions] = useState<Brand[]>(brands);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = getQueryClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,20 +70,18 @@ export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
     },
   });
 
-  const createBrand = useMutation({
-    ...createBrandMutationConfig,
+  const createBrandMutation = useMutation({
+    mutationKey: [MUTATION_KEY_CREATE_BRAND],
+    mutationFn: createBrand,
     onSuccess: (newBrand) => {
-      // Update the brands query cache
-      queryClient.setQueryData<Brand[]>(['brands'], (oldData = []) => {
+      queryClient.setQueryData<Brand[]>([QUERY_KEY_GET_BRANDS], (oldData = []) => {
         return [...oldData, newBrand];
       });
 
-      // Update UI state
       setBrandId(newBrand.id);
       setBrandNameInputDisabled(true);
       setDialogOpen(false);
 
-      // Show success toast
       toast({
         title: "Success",
         description: "Brand created successfully",
@@ -98,21 +103,8 @@ export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
     setIsResetDisabled(isFormEmpty);
   }, [formValues]);
 
-  useEffect(() => {
-    setFilteredOptions(brands);
-  }, [brands]);
-
-  const handleToggleDropdown = (newIsOpen: boolean) => {
-    setIsDropdownOpen(newIsOpen);
-  };
-
   const handleInputChange = (value: string) => {
     form.setValue("name", value);
-    setFilteredOptions(
-      brands.filter((option) =>
-        option.name.toLowerCase().includes(value.toLowerCase())
-      )
-    );
     setShowBrandAltNameInput(!!value);
     setBrandNameInputDisabled(false);
   };
@@ -131,11 +123,10 @@ export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
     setShowBrandAltNameInput(false);
     setBrandNameInputDisabled(false);
     setIsResetDisabled(true);
-    setFilteredOptions(brands);
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createBrand.mutate({
+    createBrandMutation.mutate({
       name: values.name,
       altName: values.altName,
     });
@@ -153,10 +144,8 @@ export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
               <FormControl>
                 <InputDropdown<Brand>
                   isOpen={isDropdownOpen}
-                  onToggle={handleToggleDropdown}
+                  onToggle={setIsDropdownOpen}
                   options={brands}
-                  filteredOptions={filteredOptions}
-                  error=""
                   onSelectOption={handleSelectOption}
                   onInputChange={handleInputChange}
                   placeholder="Type to create new Brand Name"
@@ -233,7 +222,7 @@ export function FormBrand({ brandId, setBrandId }: FormBrandProps) {
               <ActionButton
                 type="button"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                isPending={createBrand.isPending || useFormStatus().pending}
+                isPending={createBrandMutation.isPending || useFormStatus().pending}
               >
                 Confirm and Create
               </ActionButton>
