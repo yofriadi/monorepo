@@ -41,12 +41,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push REST API
         uses: docker/build-push-action@v5
@@ -54,9 +54,9 @@ jobs:
           context: ./apps/rest
           file: ./apps/rest/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_REGISTRY }}/luxehouze/rest:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/rest:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/rest:buildcache,mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/rest:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/rest:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/rest:buildcache,mode=max
 
   build-worker:
     needs: detect-changes
@@ -69,12 +69,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Worker
         uses: docker/build-push-action@v5
@@ -82,9 +82,9 @@ jobs:
           context: ./apps/worker
           file: ./apps/worker/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_REGISTRY }}/luxehouze/worker:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/worker:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/worker:buildcache,mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/worker:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache,mode=max
 
   build-dashboard:
     needs: detect-changes
@@ -97,12 +97,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.DOCKER_REGISTRY }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Dashboard
         uses: docker/build-push-action@v5
@@ -110,6 +110,7 @@ jobs:
           context: ./apps/dashboard
           file: ./apps/dashboard/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_REGISTRY }}/luxehouze/dashboard:${{ github.sha }}
-          cache-from: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/dashboard:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_REGISTRY }}/luxehouze/dashboard:buildcache,mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/dashboard:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache,mode=max
+
