@@ -49,16 +49,6 @@ class Brand {
     if (brands.length === 0) throw new Error('Brand not found')
     return brands[0]
   }
-
-  // Delete a brand
-  async remove(id: string) {
-    const brands = await this.db
-      .delete(brandsInWatchScraping)
-      .where(eq(brandsInWatchScraping.id, id))
-      .returning()
-    if (brands.length === 0) throw new Error('Brand not found')
-    return brands[0]
-  }
 }
 
 export const brand = new Elysia()
@@ -113,17 +103,5 @@ export const brand = new Elysia()
     body: t.Object({
       name: t.Optional(t.String()),
       altName: t.Optional(t.String()),
-    }),
-  })
-  .delete('/brand/:id', async ({ brand, params: { id }, error }) => {
-    try {
-      return await brand.remove(id)
-    } catch {
-      return error(404, 'Brand not found')
-    }
-  },
-  {
-    params: t.Object({
-      id: t.String(),
     }),
   })
