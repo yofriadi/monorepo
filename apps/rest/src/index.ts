@@ -20,5 +20,4 @@ const app = new Elysia()
   .use(snapshot)
   .listen(3002);
 
-// Testing build image
 console.log(`REST API is running at ${app.server?.hostname}:${app.server?.port}`);
