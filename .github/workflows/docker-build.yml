@@ -3,7 +3,7 @@ name: Build Docker Images
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'apps/rest/**'
       - 'apps/worker/**'
@@ -51,7 +51,7 @@ jobs:
       - name: Build and push REST API
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/rest
+          context: .
           file: ./apps/rest/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/rest:${{ github.sha }}
@@ -79,7 +79,7 @@ jobs:
       - name: Build and push Worker
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/worker
+          context: .
           file: ./apps/worker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/worker:${{ github.sha }}
@@ -107,7 +107,7 @@ jobs:
       - name: Build and push Dashboard
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/dashboard
+          context: .
           file: ./apps/dashboard/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/dashboard:${{ github.sha }}
