@@ -17,7 +17,7 @@ COPY packages/ui ./packages/ui
 
 RUN pnpm install --frozen-lockfile
 
-WORKDIR /app/apps/worker
+WORKDIR /app/apps/dashboard
 RUN bun run build
 
 FROM oven/bun:alpine
