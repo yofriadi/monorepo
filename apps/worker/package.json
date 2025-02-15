@@ -1,0 +1,36 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch index.ts",
+    "start": "bun run index.ts",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.36.0",
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.30.4",
+    "prettier": "3.5.1",
+    "tsx": "^4.19.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@bull-board/api": "^6.7.7",
+    "@bull-board/express": "^6.7.7",
+    "@mendable/firecrawl-js": "^1.17.0",
+    "@workspace/db": "workspace:*",
+    "bullmq": "^5.41.0",
+    "cheerio": "^1.0.0",
+    "drizzle-orm": "^0.39.3",
+    "express": "^4.21.2",
+    "ioredis": "^5.5.0",
+    "pg": "^8.13.3"
+  }
+}
