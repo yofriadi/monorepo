@@ -43,12 +43,14 @@ async function processMessages() {
         processedCount++;
       } catch (error) {
         console.error(`Error processing message ${message.id}:`, error);
-        await db.update(messageQueue)
-          .set({
-            status: message.retries >= 3 ? 'failed' : 'queued',
-            retries: message.retries + 1,
-          })
-          .where(eq(messageQueue.id, message.id));
+        if (message.retries) {
+          await db.update(messageQueue)
+            .set({
+              status: message.retries >= 3 ? 'failed' : 'queued',
+              retries: message.retries + 1,
+            })
+            .where(eq(messageQueue.id, message.id));
+        }
       }
     } while (message);
 
