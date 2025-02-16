@@ -2,7 +2,6 @@ import { sql, eq, and } from "drizzle-orm";
 
 import './worker/listing';
 import './worker/detail';
-import "./server";
 
 import { db, client } from "@workspace/db";
 import { messageQueue } from "@workspace/db/drizzle/schema";
