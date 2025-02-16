@@ -26,6 +26,7 @@ WORKDIR /app
 # Bring in the full repository (with dependencies installed)
 COPY --from=deps /app .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Build the Next.js app in apps/dashboard
 RUN cd apps/dashboard && pnpm run build
 
@@ -44,9 +45,7 @@ ENV NODE_ENV=production
 COPY --from=builder /app/apps/dashboard/.next/standalone/ ./
 COPY --from=builder /app/apps/dashboard/.next/static ./.next/static
 
-EXPOSE 3001
-#ENV PORT=3000
-#ENV HOSTNAME="0.0.0.0"
+EXPOSE 3000
 
 # Start the production server (server.js is generated in the standalone output)
 WORKDIR /app/apps/dashboard
