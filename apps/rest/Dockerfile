@@ -1,45 +1,41 @@
+# ---- Build Stage ----
 FROM oven/bun:alpine AS build
-
 WORKDIR /app
 
+# Install pnpm with a custom home directory so that it's available in PATH
 RUN apk update && \
     apk add --no-cache npm && \
     npm install -g pnpm@latest
 
-# Cache packages
+# Copy monorepo configuration files and lockfile
 COPY pnpm-workspace.yaml .
 COPY package.json .
 COPY pnpm-lock.yaml .
 
-COPY apps/rest/package.json ./apps/rest/package.json
-COPY packages/db/package.json ./packages/db/package.json
+# Copy the relevant Turborepo packages
+COPY apps/rest ./apps/rest
+COPY packages/db ./packages/db
 
+# Install all monorepo dependencies using pnpm
 RUN pnpm install --frozen-lockfile
 
-COPY /apps/rest ./apps/rest
-COPY /packages/db ./packages/db
-
-ENV NODE_ENV=production
-
-WORKDIR apps/rest
+# Switch to the REST app folder and build your Elysia server into a runnable script
+WORKDIR /app/apps/rest
 RUN bun build \
-	--compile \
-	--minify-whitespace \
-	--minify-syntax \
-	--target bun \
-	--outfile server \
-	./src/index.ts
+    --minify-whitespace \
+    --minify-syntax \
+    --target bun \
+    --outfile index \
+    ./src/index.ts
 
-FROM gcr.io/distroless/base
-
+# ---- Final Stage (Using Bun as the runtime) ----
+FROM build AS runner
 WORKDIR /app
 
-COPY --from=build /app/apps/rest/server server
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-CMD ["./server"]
+# Copy the built script from the build stage
+COPY --from=build /app/apps/rest/index .
 
 EXPOSE 3002
+
+# Run the built script using Bun
+CMD ["bun", "run", "./index"]
