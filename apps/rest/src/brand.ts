@@ -90,6 +90,7 @@ export const brand = new Elysia()
     try {
       return await brand.create(body)
     } catch (err) {
+      console.log(process.env.DATABASE_URL);
       console.error('Error creating brand:', err);
       return error(422, 'Unable to create brand')
     }
