@@ -89,7 +89,8 @@ export const brand = new Elysia()
   .post('/brand/', async ({ brand, body, error }) => {
     try {
       return await brand.create(body)
-    } catch {
+    } catch (err) {
+      console.error('Error creating brand:', err);
       return error(422, 'Unable to create brand')
     }
   },
