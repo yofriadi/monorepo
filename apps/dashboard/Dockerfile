@@ -27,7 +27,7 @@ WORKDIR /app
 COPY --from=deps /app .
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Build the Next.js app in apps/dashboard
 RUN cd apps/dashboard && pnpm run build
 

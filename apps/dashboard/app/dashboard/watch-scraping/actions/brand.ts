@@ -4,10 +4,12 @@ export interface Brand {
   id: string;
   name: string;
   altName?: string;
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 export async function getBrands() {
-  const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/brands')
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brands`)
   if (!response.ok) {
     throw new Error('Failed to fetch brands')
   }
@@ -20,7 +22,7 @@ export interface CreateBrandInput {
 }
 
 export async function createBrand(input: CreateBrandInput) {
-  const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/brand', {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brand`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
