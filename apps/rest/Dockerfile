@@ -29,7 +29,7 @@ RUN bun build \
     ./src/index.ts
 
 # ---- Final Stage (Using Bun as the runtime) ----
-FROM build AS runner
+FROM oven/bun:alpine
 WORKDIR /app
 
 # Copy the built script from the build stage
