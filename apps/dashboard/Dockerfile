@@ -18,22 +18,29 @@ COPY apps/dashboard/package.json ./apps/dashboard/
 # Create necessary directories for workspace
 RUN mkdir -p packages/ui apps/dashboard
 
+# Copy the rest of the source code
+COPY . .
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Now copy the rest of the source code
-COPY . .
-
 # ---- Builder Stage: Build the Next.js app ----
 FROM base AS builder
+# Install pnpm
 RUN apk update && \
     apk add --no-cache npm && \
     npm install -g pnpm@latest
 
 WORKDIR /app
 
-# Copy everything including node_modules from installer stage
-COPY --from=installer /app/ ./
+# Copy all source files
+COPY . .
+# Copy pnpm files
+COPY --from=installer /app/pnpm-lock.yaml ./
+COPY --from=installer /app/package.json ./
+
+# Install dependencies again in builder stage
+RUN pnpm install --frozen-lockfile
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
@@ -58,7 +65,7 @@ COPY --from=builder /app/packages/ui ./packages/ui
 
 # Copy Next.js specific files
 COPY --from=builder /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
-#COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
+COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
 
 EXPOSE 3000
 
