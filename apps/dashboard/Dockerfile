@@ -65,7 +65,7 @@ COPY --from=builder /app/packages/ui ./packages/ui
 
 # Copy Next.js specific files
 COPY --from=builder /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
-COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
+#COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
 
 EXPOSE 3000
 
