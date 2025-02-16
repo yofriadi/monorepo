@@ -113,5 +113,6 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/dashboard:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache,mode=max
-          build-args: NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
