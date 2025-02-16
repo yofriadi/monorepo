@@ -15,6 +15,9 @@ COPY package.json ./
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/dashboard/package.json ./apps/dashboard/
 
+# Create necessary directories for workspace
+RUN mkdir -p packages/ui/src apps/dashboard
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
@@ -28,8 +31,12 @@ RUN apk update && \
     npm install -g pnpm@latest
 
 WORKDIR /app
-# Bring in the full repository with dependencies installed
-COPY --from=installer /app .
+
+# Copy everything including node_modules from installer stage
+COPY --from=installer /app/ ./
+COPY --from=installer /app/node_modules/ ./node_modules/
+COPY --from=installer /app/packages/ui/node_modules/ ./packages/ui/node_modules/
+COPY --from=installer /app/apps/dashboard/node_modules/ ./apps/dashboard/node_modules/
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
