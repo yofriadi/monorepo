@@ -11,7 +11,7 @@ export interface CreateSourceInput {
 }
 
 export async function createSource(input: CreateSourceInput) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/source`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}source`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

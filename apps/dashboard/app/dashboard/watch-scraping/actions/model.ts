@@ -8,7 +8,7 @@ export interface Model {
 }
 
 export async function getModels(brandId: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brand/${brandId}/models`)
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brand/${brandId}/models`)
   if (!response.ok) {
     throw new Error('Failed to fetch models')
   }
@@ -22,7 +22,7 @@ export interface CreateModelInput {
 }
 
 export async function createModel(input: CreateModelInput) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/model`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}model`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

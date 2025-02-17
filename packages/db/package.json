@@ -2,6 +2,7 @@
   "name": "@workspace/db",
   "module": "index.ts",
   "type": "module",
+  "private": true,
   "scripts": {
     "migrate": "dotenvx run -- node-pg-migrate --migrations-dir=./migrations",
     "migrate:create": "dotenvx run -- node-pg-migrate -m ./migrations -j sql create",
@@ -10,11 +11,10 @@
     "debug:env": "dotenvx run -f .env -- node -e 'console.log(process.env)'"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.35.0",
+    "@dotenvx/dotenvx": "^1.36.0",
     "@types/bun": "latest",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.4",
-    "node-pg-migrate": "^7.9.1",
     "tsx": "^4.19.2"
   },
   "peerDependencies": {
@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.38.4",
-    "pg": "^8.13.2"
+    "drizzle-orm": "^0.39.3",
+    "node-pg-migrate": "^7.9.1",
+    "pg": "^8.13.3"
   }
 }

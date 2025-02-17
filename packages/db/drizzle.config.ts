@@ -6,7 +6,5 @@ export default defineConfig({
   schema: "./schema",
   dialect: "postgresql",
   schemaFilter: ["public", "watch_scraping"],
-  dbCredentials: {
-    url: process.env.DATABASE_URL!,
-  },
+  dbCredentials: { url: process.env.DATABASE_URL! },
 });

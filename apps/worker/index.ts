@@ -2,7 +2,7 @@ import { sql, eq, and } from "drizzle-orm";
 
 import './worker/listing';
 import './worker/detail';
-import "./server";
+//import "./server"; // enable if you want to use the bull-board UI on development
 
 import { db, client } from "@workspace/db";
 import { messageQueue } from "@workspace/db/drizzle/schema";
@@ -43,12 +43,14 @@ async function processMessages() {
         processedCount++;
       } catch (error) {
         console.error(`Error processing message ${message.id}:`, error);
-        await db.update(messageQueue)
-          .set({
-            status: message.retries >= 3 ? 'failed' : 'queued',
-            retries: message.retries + 1,
-          })
-          .where(eq(messageQueue.id, message.id));
+        if (message.retries) {
+          await db.update(messageQueue)
+            .set({
+              status: message.retries >= 3 ? 'failed' : 'queued',
+              retries: message.retries + 1,
+            })
+            .where(eq(messageQueue.id, message.id));
+        }
       }
     } while (message);
 

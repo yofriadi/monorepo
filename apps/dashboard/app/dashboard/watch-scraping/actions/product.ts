@@ -8,7 +8,7 @@ export interface Product {
 }
 
 export async function getProducts(modelId: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/model/${modelId}/products`)
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}model/${modelId}/products`)
   if (!response.ok) {
     throw new Error('Failed to fetch products')
   }
@@ -21,7 +21,7 @@ export interface CreateProductInput {
 }
 
 export async function createProduct(input: CreateProductInput) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}product`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
