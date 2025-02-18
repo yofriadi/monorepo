@@ -6,6 +6,7 @@ import { model } from "./model";
 import { product } from "./product";
 import { source } from "./source";
 import { snapshot } from "./snapshot";
+import { coefficient } from "./coefficient";
 
 const app = new Elysia()
   .use(swagger())
@@ -18,6 +19,7 @@ const app = new Elysia()
   .use(product)
   .use(source)
   .use(snapshot)
+  .use(coefficient)
   .listen(3001);
 
 console.log(

@@ -125,3 +125,4 @@ export const snapshotsInWatchScraping = watchScraping.table("snapshots", {
 	check("snapshots_source_id_check", sql`CHECK (typeid_check_text(source_id, 'source'::text`),
 	check("snapshots_parent_id_check", sql`CHECK (typeid_check_text(parent_id, 'snapshot'::text`),
 ]);
+
