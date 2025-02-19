@@ -126,3 +126,15 @@ export const snapshotsInWatchScraping = watchScraping.table("snapshots", {
 	check("snapshots_parent_id_check", sql`CHECK (typeid_check_text(parent_id, 'snapshot'::text`),
 ]);
 
+export const lookupPrices = pgTable("lookup_prices", {
+	id: text().default(sql`typeid_generate_text('lookup_pricing'::text)`).notNull(),
+	type: varchar({ length: 16 }).notNull(),
+	parameter: varchar({ length: 50 }).primaryKey().notNull(),
+	value: numeric({ precision: 12, scale:  6 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+}, () => [
+	check("lookup_pricing_id_check", sql`CHECK (typeid_check_text(id, 'lookup_pricing'::text`),
+	check("lookup_pricing_type_check", sql`(type)::text = ANY ((ARRAY['brand'::character varying, 'coefficient'::character varying, 'dial'::character varying, 'bracelet'::character varying, 'swu type'::character varying, 'condition'::character varying, 'reference number'::character varying])::text[])`),
+]);
+

@@ -1,28 +1,34 @@
 "use client"
+
 import { useState, useEffect } from "react"
 import { Button } from "@workspace/ui/components/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 
 interface DataDialogProps {
   title: string
-  fields: { key: string; label: string }[]
-  onSubmit: (data: any) => void
-  initialData?: any
+  onSubmit: (data: { parameter: string; value: number }) => void
+  initialData?: { parameter: string; value: number }
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
 export function DataDialog({ 
   title, 
-  fields, 
   onSubmit, 
   initialData,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange 
 }: DataDialogProps) {
-  const [formData, setFormData] = useState(initialData || {})
+  const [formData, setFormData] = useState(initialData || { parameter: '', value: 0 })
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -37,7 +43,7 @@ export function DataDialog({
     if (controlledOpen === undefined) {
       setOpen(false)
     }
-    setFormData({})
+    setFormData({ parameter: '', value: 0 })
   }
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -47,7 +53,7 @@ export function DataDialog({
       setOpen(newOpen)
     }
     if (!newOpen) {
-      setFormData({})
+      setFormData({ parameter: '', value: 0 })
     }
   }
 
@@ -69,19 +75,29 @@ export function DataDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {fields.map((field) => (
-              <div key={field.key} className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor={field.key} className="text-right">
-                  {field.label}
-                </Label>
-                <Input
-                  id={field.key}
-                  value={formData[field.key] || ""}
-                  onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            ))}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="parameter" className="text-right">
+                Parameter
+              </Label>
+              <Input
+                id="parameter"
+                value={formData.parameter}
+                onChange={(e) => setFormData({ ...formData, parameter: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="value" className="text-right">
+                Value
+              </Label>
+              <Input
+                id="value"
+                type="number"
+                value={formData.value}
+                onChange={(e) => setFormData({ ...formData, value: Number(e.target.value) })}
+                className="col-span-3"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="submit">Save changes</Button>
@@ -91,3 +107,4 @@ export function DataDialog({
     </Dialog>
   )
 }
+

@@ -1,33 +1,49 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/components/dropdown-menu"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@workspace/ui/components/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@workspace/ui/components/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@workspace/ui/components/alert-dialog"
 import { useState } from "react"
 
-interface Column {
-  key: string
-  label: string
-}
+const columns = [
+  { key: "parameter", label: "Parameter" },
+  { key: "value", label: "Value" },
+]
 
 interface DataTableProps<T> {
   data: T[]
-  columns: Column[]
-  onEdit: (item: T) => void
-  onDelete: (item: T) => void
+  onEdit: (item?: T) => void
 }
 
-export function DataTable<T extends { id: number }>({
+export function DataTable<T extends { parameter: string; value: number }>({
   data,
-  columns,
   onEdit,
-  onDelete
 }: DataTableProps<T>) {
   const [deleteItem, setDeleteItem] = useState<T | null>(null)
 
   const handleDelete = () => {
     if (deleteItem) {
-      onDelete(deleteItem)
       setDeleteItem(null)
     }
   }
@@ -45,9 +61,9 @@ export function DataTable<T extends { id: number }>({
         </TableHeader>
         <TableBody>
           {data.map((item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.parameter}>
               {columns.map((column) => (
-                <TableCell key={`${item.id}-${column.key}`}>
+                <TableCell key={`${item.parameter}-${column.key}`}>
                   {(item as any)[column.key]}
                 </TableCell>
               ))}
@@ -61,7 +77,7 @@ export function DataTable<T extends { id: number }>({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => onEdit(item)}>Edit</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDeleteItem(item)}>Delete</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {}}>Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
