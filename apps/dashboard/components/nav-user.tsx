@@ -1,5 +1,4 @@
 "use client"
-
 import {
   BadgeCheck,
   Bell,
@@ -8,7 +7,7 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react"
-
+import { useRouter } from 'next/navigation'
 import {
   Avatar,
   AvatarFallback,
@@ -40,6 +39,24 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch('/api/signout', {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        router.push('/signin');
+        router.refresh();
+      } else {
+        console.error('Failed to sign out');
+      }
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -81,18 +98,18 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
+              <DropdownMenuItem onClick={() => router.push('/dashboard/account/settings')}>
+                <BadgeCheck className="mr-2 size-4" />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Bell />
+                <Bell className="mr-2 size-4" />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="mr-2 size-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -101,4 +118,3 @@ export function NavUser({
     </SidebarMenu>
   )
 }
-
