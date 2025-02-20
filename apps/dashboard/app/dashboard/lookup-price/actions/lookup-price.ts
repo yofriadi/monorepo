@@ -45,3 +45,19 @@ export async function deleteLookupPrice(id: string): Promise<LookupPrice> {
 
   return res.json()
 }
+
+export async function createLookupPrice(payload: { parameter: string; value: number; type: string }): Promise<LookupPrice> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}lookup-price`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload)
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to create lookup price')
+  }
+
+  return res.json()
+}
