@@ -1,8 +1,9 @@
 "use client"
 
 import type { LookupPrice } from "./types"
+import { LookupPriceType } from "./types"
 import { LookupPriceTable } from "./components/lookup-price-table"
-import { deleteLookupPrice, updateLookupPrice } from "./actions/lookup-price"
+import { deleteLookupPrice, updateLookupPrice, createLookupPrice } from "./actions/lookup-price"
 import { useRouter } from "next/navigation"
 
 export function BrandTable({ data }: { data: LookupPrice[] }) {
@@ -26,12 +27,23 @@ export function BrandTable({ data }: { data: LookupPrice[] }) {
     }
   }
 
+  const handleCreate = async (payload: { parameter: string; value: number; type: string }) => {
+    try {
+      await createLookupPrice(payload)
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to create brand price:', error)
+    }
+  }
+
   return (
     <LookupPriceTable 
-      title="Brand" 
+      title="Brand"
+      type={LookupPriceType.Brand}
       data={data} 
       onEdit={handleEdit}
       onDelete={handleDelete}
+      onCreate={handleCreate}
     />
   )
 }

@@ -1,7 +1,14 @@
 "use client"
 
-import { type LookupPrice } from "../types"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
+import { type LookupPrice, LookupPriceType } from "../types"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { MoreHorizontal } from "lucide-react"
 import {
@@ -25,14 +32,17 @@ import { DataDialog } from "./data-dialog"
 
 interface LookupPriceTableProps {
   title: string
+  type: LookupPriceType | "swu type" | "reference number"
   data: LookupPrice[]
   onEdit: (id: string, { parameter, value }: { parameter: string; value: number }) => void
   onDelete: (id: string) => void
+  onCreate: (payload: { parameter: string; value: number; type: LookupPriceType }) => void
 }
 
-export function LookupPriceTable({ title, data, onEdit, onDelete }: LookupPriceTableProps) {
+export function LookupPriceTable({ title, type, data, onEdit, onDelete, onCreate }: LookupPriceTableProps) {
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<LookupPrice | null>(null)
+  const [isAddingNew, setIsAddingNew] = useState(false)
 
   const handleDelete = () => {
     if (deleteItemId) {
@@ -43,7 +53,12 @@ export function LookupPriceTable({ title, data, onEdit, onDelete }: LookupPriceT
 
   return (
     <>
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <Button size="sm" onClick={() => setIsAddingNew(true)}>
+          Add New
+        </Button>
+      </div>
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -83,18 +98,30 @@ export function LookupPriceTable({ title, data, onEdit, onDelete }: LookupPriceT
       </div>
 
       <DataDialog
-        title={`Edit ${title}`}
-        initialData={{
-          parameter: editingItem?.parameter || '',
-          value: editingItem?.value || 0
+        title={editingItem ? `Edit ${title}` : `Add ${title}`}
+        initialData={editingItem ? {
+          parameter: editingItem.parameter,
+          value: editingItem.value
+        } : {
+          parameter: '',
+          value: 0
         }}
         onSubmit={(formData) => {
           if (editingItem) {
             onEdit(editingItem.id, { parameter: formData.parameter, value: formData.value })
+          } else {
+            onCreate({ parameter: formData.parameter, value: formData.value, type })
+          }
+          setEditingItem(null)
+          setIsAddingNew(false)
+        }}
+        open={!!editingItem || isAddingNew}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingItem(null)
+            setIsAddingNew(false)
           }
         }}
-        open={!!editingItem}
-        onOpenChange={(open) => !open && setEditingItem(null)}
       />
 
       <AlertDialog open={!!deleteItemId} onOpenChange={(open) => !open && setDeleteItemId(null)}>
