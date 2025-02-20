@@ -4,6 +4,8 @@ import "@workspace/ui/globals.css"
 import { ThemeProvider } from "next-themes"
 import QueryProvider from "@/lib/providers/query";
 import { Toaster } from "@workspace/ui/components/toaster"
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -23,12 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
-        <QueryProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </QueryProvider>
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <QueryProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </QueryProvider>
+          </StackTheme>
+        </StackProvider>
       </body>
     </html>
   )
