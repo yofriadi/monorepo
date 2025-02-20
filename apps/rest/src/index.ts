@@ -8,7 +8,7 @@ import { source } from "./source";
 import { snapshot } from "./snapshot";
 import { lookupPrice } from "./lookup-price";
 
-const app = new Elysia()
+const app = new Elysia({ prefix: '/api' })
   .use(swagger())
   .onError(({ error , code }) => { 
     if (code === 'NOT_FOUND') return
