@@ -13,10 +13,10 @@ RUN apk update && \
 COPY pnpm-lock.yaml ./
 COPY package.json ./
 COPY packages/ui/package.json ./packages/ui/
-COPY apps/dashboard/package.json ./apps/dashboard/
+COPY apps/scraping/package.json ./apps/scraping/
 
 # Create necessary directories for workspace
-RUN mkdir -p packages/ui apps/dashboard
+RUN mkdir -p packages/ui apps/scraping
 
 # Copy the rest of the source code
 COPY . .
@@ -46,8 +46,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# Build the Next.js app in apps/dashboard
-RUN cd apps/dashboard && pnpm run build
+# Build the Next.js app in apps/scraping
+RUN cd apps/scraping && pnpm run build
 
 # ---- Runner Stage: Create the minimal production image ----
 FROM oven/bun:alpine AS runner
@@ -55,20 +55,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Create necessary directories
-RUN mkdir -p apps/dashboard
+RUN mkdir -p apps/scraping
 
 # Copy the standalone build
-COPY --from=builder /app/apps/dashboard/.next/standalone/ ./
+COPY --from=builder /app/apps/scraping/.next/standalone/ ./
 
 # Copy the UI components - this is critical for shadcn/ui
 COPY --from=builder /app/packages/ui ./packages/ui
 
 # Copy Next.js specific files
-COPY --from=builder /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
+COPY --from=builder /app/apps/scraping/.next/static ./apps/scraping/.next/static
 
 EXPOSE 3000
 
 # Start the production server
-WORKDIR /app/apps/dashboard
+WORKDIR /app/apps/scraping
 CMD ["bun", "run", "server.js"]
 
