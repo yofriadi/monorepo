@@ -28,8 +28,7 @@ import {
 import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast"
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { Product, getProducts, createProduct } from "../actions/product";
-import { QUERY_KEY_GET_PRODUCTS, MUTATION_KEY_CREATE_PRODUCT } from "@/constants/query-key";
+import { Product, productOptions, createProduct } from "../queries/product";
 
 const formSchema = z.object({
   referenceNumber: z.string().min(3, {
@@ -37,13 +36,12 @@ const formSchema = z.object({
   }),
 });
 
-interface FormProductProps {
+export function FormProduct({ modelId, productId, setProductId, onReset }: {
   modelId: string;
   productId: string;
   setProductId: (modelId: string) => void;
-}
-
-export function FormProduct({ modelId, productId, setProductId }: FormProductProps) {
+  onReset: () => void;
+}) {
   const { toast } = useToast();
 
   const [isProductNameInputDisabled, setProductNameInputDisabled] = useState(false);
@@ -52,19 +50,12 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
   const [isDialogOpen, setDialogOpen] = useState(false);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: [QUERY_KEY_GET_PRODUCTS, modelId],
-    queryFn: () => getProducts(modelId),
+    ...productOptions(modelId),
     enabled: isDropdownOpen,
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { referenceNumber: "" },
-  });
-
-  const createProductMutation = useMutation({
-    mutationKey: [MUTATION_KEY_CREATE_PRODUCT],
-    mutationFn: createProduct,
+  const mutation = useMutation({
+    ...createProduct,
     onSuccess: (product) => {
       toast({
         title: "Success",
@@ -81,10 +72,15 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create product",
+        description: error instanceof Error ? error.message : "Failed to create product",
         variant: "destructive",
       });
     },
+  });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { referenceNumber: "" },
   });
 
   const formValues = form.watch();
@@ -106,15 +102,16 @@ export function FormProduct({ modelId, productId, setProductId }: FormProductPro
     setIsDropdownOpen(false);
   };
 
-  function resetForm() {
+  const resetForm = () => {
     form.reset();
     setProductId("");
     setProductNameInputDisabled(false);
     setIsResetDisabled(true);
+    onReset();
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    createProductMutation.mutate({
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    mutation.mutate({
       modelId,
       referenceNumber: values.referenceNumber,
     });

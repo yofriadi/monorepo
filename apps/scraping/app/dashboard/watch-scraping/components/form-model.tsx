@@ -30,8 +30,7 @@ import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast";
 import { getQueryClient } from '@/lib/providers/get-query-client'
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Model, getModels, createModel } from "../actions/model";
-import { QUERY_KEY_GET_MODELS, MUTATION_KEY_CREATE_MODEL } from "@/constants/query-key";
+import { Model, QUERY_KEY_GET_MODELS, modelOptions, createModel } from "../queries/model";
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -40,13 +39,12 @@ const formSchema = z.object({
   altName: z.string().optional(),
 });
 
-interface FormModelProps {
+export function FormModel({ brandId, modelId, setModelId, onReset }: {
   brandId: string;
   modelId: string;
   setModelId: (modelId: string) => void;
-}
-
-export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
+  onReset: () => void;
+}) {
   const { toast } = useToast();
   const queryClient = getQueryClient();
 
@@ -57,8 +55,7 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
   const [isDialogOpen, setDialogOpen] = useState(false);
 
   const { data: models = [], isLoading } = useQuery({
-    queryKey: [QUERY_KEY_GET_MODELS, brandId],
-    queryFn: () => getModels(brandId),
+    ...modelOptions(brandId),
     enabled: isDropdownOpen,
   });
 
@@ -67,9 +64,8 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
     defaultValues: { name: "", altName: "" },
   });
 
-  const createModelMutation = useMutation({
-    mutationKey: [MUTATION_KEY_CREATE_MODEL],
-    mutationFn: createModel,
+  const mutation = useMutation({
+    ...createModel,
     onSuccess: (newModel) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY_GET_MODELS, brandId] });
 
@@ -88,7 +84,7 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create model",
+        description: error instanceof Error ? error.message : "Failed to create model",
         variant: "destructive",
       });
     },
@@ -116,16 +112,17 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
     setIsDropdownOpen(false);
   };
 
-  function resetForm() {
+  const resetForm = () => {
     form.reset();
     setModelId("");
     setShowModelAltNameInput(false);
     setModelNameInputDisabled(false);
     setIsResetDisabled(true);
+    onReset();
   }
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    createModelMutation.mutate({
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    mutation.mutate({
       brandId,
       name: values.name,
       altName: values.altName,
@@ -229,7 +226,7 @@ export function FormModel({ brandId, modelId, setModelId }: FormModelProps) {
               <ActionButton
                 type="submit"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                isPending={pending}
+                isPending={mutation.isPending || useFormStatus().pending}
               >
                 Confirm and Create
               </ActionButton>

@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
-import { QUERY_KEY_PRODUCT_SNAPSHOTS } from '@/constants/query-key'
+
+const QUERY_KEY_PRODUCT_SNAPSHOTS = 'product-snapshots'
 
 export interface ProductSnapshot {
   brandName: string

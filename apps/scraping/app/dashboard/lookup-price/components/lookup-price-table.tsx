@@ -36,7 +36,11 @@ interface LookupPriceTableProps {
   data: LookupPrice[]
   onEdit: (id: string, { parameter, value }: { parameter: string; value: number }) => void
   onDelete: (id: string) => void
-  onCreate: (payload: { parameter: string; value: number; type: LookupPriceType }) => void
+  onCreate: (payload: {
+    parameter: string;
+    value: number;
+    type: LookupPriceType | "swu type" | "reference number";
+  }) => void
 }
 
 export function LookupPriceTable({ title, type, data, onEdit, onDelete, onCreate }: LookupPriceTableProps) {

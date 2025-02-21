@@ -28,12 +28,20 @@ export async function POST(request: Request) {
 
     if (apiUrl && refreshToken) {
       try {
-        const headers = {
+        const headers: Record<string, string> = {
           "x-stack-access-type": "client",
-          "x-stack-project-id": projectId,
-          "x-stack-publishable-client-key": process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
+          //"x-stack-project-id": projectId,
+          //"x-stack-publishable-client-key": process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
           "x-stack-refresh-token": refreshToken,
         };
+
+        if (projectId) {
+          headers["x-stack-project-id"] = projectId;
+        }
+
+        if (process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) {
+          headers["x-stack-publishable-client-key"] = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+        }
 
         const signOutResponse = await fetch(`${apiUrl}/api/v1/auth/sessions/current`, {
           method: 'DELETE',

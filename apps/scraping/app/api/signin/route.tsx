@@ -20,14 +20,25 @@ export async function POST(request: Request) {
       password
     };
 
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "x-stack-access-type": "client",
+      "x-stack-project-id": projectId,
+    };
+
+    if (process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) {
+      headers["x-stack-publishable-client-key"] = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+    }
+
     const response = await fetch(`${apiUrl}/api/v1/auth/password/sign-in`, {
       method: "POST",
-      headers: {
+      headers,
+      /*headers: {
         "Content-Type": "application/json",
         "x-stack-access-type": "client",
         "x-stack-project-id": projectId,
         "x-stack-publishable-client-key": process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
-      },
+      },*/
       body: JSON.stringify(authPayload),
     });
 

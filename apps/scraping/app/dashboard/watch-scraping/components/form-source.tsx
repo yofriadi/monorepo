@@ -26,9 +26,9 @@ import {
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import ActionButton from "@workspace/ui/components/prismui/action-button";
-import { useToast } from "@workspace/ui/hooks/use-toast"
-import { useMutation } from '@tanstack/react-query'
-import { createSource } from "../actions/source";
+import { useToast } from "@workspace/ui/hooks/use-toast";
+import { useMutation } from '@tanstack/react-query';
+import { createSourceMutation } from "../queries/source";
 
 const formSchema = z.object({
   url: z.string().url(),
@@ -44,8 +44,8 @@ export function FormSource({ productId }: { productId: string }) {
     mode: "onChange",
   });
 
-  const createSourceMutation = useMutation({
-    mutationFn: createSource,
+  const mutation = useMutation({
+    ...createSourceMutation,
     onSuccess: () => {
       toast({
         title: "Success",
@@ -56,14 +56,14 @@ export function FormSource({ productId }: { productId: string }) {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to create product",
+        description: error instanceof Error ? error.message : "Failed to create source",
         variant: "destructive",
       });
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    createSourceMutation.mutate({ productId, url: values.url });
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    mutation.mutate({ productId, url: values.url });
     setDialogOpen(false);
   }
 
@@ -119,7 +119,7 @@ export function FormSource({ productId }: { productId: string }) {
                 <ActionButton
                   type="button"
                   onClick={() => form.handleSubmit(onSubmit)()}
-                  isPending={pending}
+                  isPending={mutation.isPending || pending}
                 >
                   Create Scraping
                 </ActionButton>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useSuspenseQuery, useMutation } from '@tanstack/react-query'
 import { useForm } from "react-hook-form";
 import { useFormStatus } from "react-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,8 +30,7 @@ import {
 import { getQueryClient } from '@/lib/providers/get-query-client'
 import ActionButton from "@workspace/ui/components/prismui/action-button";
 import { useToast } from "@workspace/ui/hooks/use-toast";
-import { type Brand, getBrands, createBrand } from "../actions/brand"
-import { QUERY_KEY_GET_BRANDS, MUTATION_KEY_CREATE_BRAND } from '@/constants/query-key'
+import { type Brand, QUERY_KEY_GET_BRANDS, brandOptions, createBrand } from "../queries/brand"
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -40,21 +39,19 @@ const formSchema = z.object({
   altName: z.string().optional(),
 });
 
-interface FormBrandProps {
-  initialData: Brand[];
+export function FormBrand({
+  brandId,
+  setBrandId,
+  onReset,
+}: {
   brandId: string;
   setBrandId: (brandId: string) => void;
-}
-
-export function FormBrand({ initialData, brandId, setBrandId }: FormBrandProps) {
+  onReset: () => void;
+}) {
   const { toast } = useToast();
   const queryClient = getQueryClient();
 
-  const { data: brands = [] } = useQuery({
-    queryKey: [QUERY_KEY_GET_BRANDS],
-    queryFn: getBrands,
-    initialData,
-  });
+  const { data: brands } = useSuspenseQuery(brandOptions)
 
   const [showBrandAltNameInput, setShowBrandAltNameInput] = useState(false);
   const [isBrandNameInputDisabled, setBrandNameInputDisabled] = useState(false);
@@ -70,9 +67,8 @@ export function FormBrand({ initialData, brandId, setBrandId }: FormBrandProps) 
     },
   });
 
-  const createBrandMutation = useMutation({
-    mutationKey: [MUTATION_KEY_CREATE_BRAND],
-    mutationFn: createBrand,
+  const mutation = useMutation({
+    ...createBrand,
     onSuccess: (newBrand) => {
       queryClient.setQueryData<Brand[]>([QUERY_KEY_GET_BRANDS], (oldData = []) => {
         return [...oldData, newBrand];
@@ -117,16 +113,17 @@ export function FormBrand({ initialData, brandId, setBrandId }: FormBrandProps) 
     setIsDropdownOpen(false);
   };
 
-  function resetForm() {
+  const resetForm = () => {
     form.reset();
     setBrandId("");
     setShowBrandAltNameInput(false);
     setBrandNameInputDisabled(false);
     setIsResetDisabled(true);
+    onReset();
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    createBrandMutation.mutate({
+    mutation.mutate({
       name: values.name,
       altName: values.altName,
     });
@@ -222,7 +219,7 @@ export function FormBrand({ initialData, brandId, setBrandId }: FormBrandProps) 
               <ActionButton
                 type="button"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                isPending={createBrandMutation.isPending || useFormStatus().pending}
+                isPending={mutation.isPending || useFormStatus().pending}
               >
                 Confirm and Create
               </ActionButton>

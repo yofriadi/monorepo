@@ -1,8 +1,0 @@
-export const QUERY_KEY_GET_BRANDS = 'brands'
-export const MUTATION_KEY_CREATE_BRAND = 'createBrand'
-export const QUERY_KEY_GET_MODELS = 'models'
-export const MUTATION_KEY_CREATE_MODEL = 'createModel'
-export const QUERY_KEY_GET_PRODUCTS = 'products'
-export const MUTATION_KEY_CREATE_PRODUCT = 'createProduct'
-export const QUERY_KEY_PRODUCT_SNAPSHOTS = 'product-snapshots'
-

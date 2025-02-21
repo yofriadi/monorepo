@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isAuthenticated) {
-    const role = request.cookies.get('user_role');
+    const role = request.cookies.get('user_role')?.value;
 
     if (role !== 'admin' && pathname.startsWith('/users')) {
       const redirectUrl = new URL('/dashboard', request.url);
