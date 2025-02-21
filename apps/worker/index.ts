@@ -2,7 +2,7 @@ import { sql, eq, and } from "drizzle-orm";
 
 import './worker/listing';
 import './worker/detail';
-//import "./server"; // enable if you want to use the bull-board UI on development
+//import "./server";
 
 import { db, client } from "@workspace/db";
 import { messageQueue } from "@workspace/db/drizzle/schema";

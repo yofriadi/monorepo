@@ -1,0 +1,41 @@
+import { Geist, Geist_Mono } from "next/font/google"
+
+import "@workspace/ui/globals.css"
+import { ThemeProvider } from "next-themes"
+import QueryProvider from "@/lib/providers/query";
+import { Toaster } from "@workspace/ui/components/toaster"
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
+
+const fontSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
+const fontMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+})
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}>
+        <StackProvider app={stackServerApp}>
+          <StackTheme>
+            <QueryProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </QueryProvider>
+          </StackTheme>
+        </StackProvider>
+      </body>
+    </html>
+  )
+}

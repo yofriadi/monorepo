@@ -21,7 +21,7 @@ const app = new Elysia()
   })
   .use(serverAdapter.registerPlugin())
 
-app.listen(3003, ({ port, url }) => {
+app.listen(3002, ({ port, url }) => {
   console.log(`Running on ${url.hostname}:${port}...`);
   console.log(`For the UI open http://localhost:${port}/bullmq`);
   console.log('Make sure Redis is running on port 6379 by default');

@@ -7,7 +7,7 @@ on:
     paths:
       - 'apps/rest/**'
       - 'apps/worker/**'
-      - 'apps/dashboard/**'
+      - 'apps/scraping/**'
       - '.github/workflows/docker-build.yml'
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
     outputs:
       rest: ${{ steps.changes.outputs.rest }}
       worker: ${{ steps.changes.outputs.worker }}
-      dashboard: ${{ steps.changes.outputs.dashboard }}
+      scraping: ${{ steps.changes.outputs.scraping }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
@@ -27,8 +27,8 @@ jobs:
               - 'apps/rest/**'
             worker:
               - 'apps/worker/**'
-            dashboard:
-              - 'apps/dashboard/**'
+            scraping:
+              - 'apps/scraping/**'
 
   build-rest:
     needs: detect-changes
@@ -86,9 +86,9 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache,mode=max
 
-  build-dashboard:
+  build-scraping:
     needs: detect-changes
-    if: needs.detect-changes.outputs.dashboard == 'true'
+    if: needs.detect-changes.outputs.scraping == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -104,15 +104,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Dashboard
+      - name: Build and push Scraping
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./apps/dashboard/Dockerfile
+          file: ./apps/scraping/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/dashboard:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/dashboard:buildcache,mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/scraping:${{ github.sha }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/scraping:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/scraping:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-

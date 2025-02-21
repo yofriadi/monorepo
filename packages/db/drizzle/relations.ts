@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, sourcesInWatchScraping, snapshotsInWatchScraping } from "./schema";
+import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping } from "./schema";
 
 export const modelsInWatchScrapingRelations = relations(modelsInWatchScraping, ({one, many}) => ({
 	brandsInWatchScraping: one(brandsInWatchScraping, {
@@ -21,19 +21,7 @@ export const productsInWatchScrapingRelations = relations(productsInWatchScrapin
 	sourcesInWatchScrapings: many(sourcesInWatchScraping),
 }));
 
-export const sourcesInWatchScrapingRelations = relations(sourcesInWatchScraping, ({one, many}) => ({
-	productsInWatchScraping: one(productsInWatchScraping, {
-		fields: [sourcesInWatchScraping.productId],
-		references: [productsInWatchScraping.id]
-	}),
-	snapshotsInWatchScrapings: many(snapshotsInWatchScraping),
-}));
-
 export const snapshotsInWatchScrapingRelations = relations(snapshotsInWatchScraping, ({one, many}) => ({
-	sourcesInWatchScraping: one(sourcesInWatchScraping, {
-		fields: [snapshotsInWatchScraping.sourceId],
-		references: [sourcesInWatchScraping.id]
-	}),
 	snapshotsInWatchScraping: one(snapshotsInWatchScraping, {
 		fields: [snapshotsInWatchScraping.parentId],
 		references: [snapshotsInWatchScraping.id],
@@ -41,5 +29,17 @@ export const snapshotsInWatchScrapingRelations = relations(snapshotsInWatchScrap
 	}),
 	snapshotsInWatchScrapings: many(snapshotsInWatchScraping, {
 		relationName: "snapshotsInWatchScraping_parentId_snapshotsInWatchScraping_id"
+	}),
+	sourcesInWatchScraping: one(sourcesInWatchScraping, {
+		fields: [snapshotsInWatchScraping.sourceId],
+		references: [sourcesInWatchScraping.id]
+	}),
+}));
+
+export const sourcesInWatchScrapingRelations = relations(sourcesInWatchScraping, ({one, many}) => ({
+	snapshotsInWatchScrapings: many(snapshotsInWatchScraping),
+	productsInWatchScraping: one(productsInWatchScraping, {
+		fields: [sourcesInWatchScraping.productId],
+		references: [productsInWatchScraping.id]
 	}),
 }));

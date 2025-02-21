@@ -66,7 +66,7 @@ export const brand = new Elysia()
   .get('/brands', async ({ brand }) => {
     return await brand.getAll()
   })
-  .get('/brand:id', async ({ brand, params: { id }, error }) => {
+  .get('/brand/:id', async ({ brand, params: { id }, error }) => {
     try {
       return await brand.getById(id)
     } catch {
@@ -86,10 +86,10 @@ export const brand = new Elysia()
       id: t.String(),
     }),
   })
-  .post('/brand/', async ({ brand, body, error }) => {
+  .post('/brand', async ({ brand, body, error }) => {
     try {
       return await brand.create(body)
-    } catch (err) {
+    } catch {
       return error(422, 'Unable to create brand')
     }
   },
