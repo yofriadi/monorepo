@@ -113,7 +113,7 @@ jobs:
           tags: ghcr.io/${{ github.repository_owner }}/scraping:${{ github.sha }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/scraping:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/scraping:buildcache,mode=max
-          build-args: |
+          secrets: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_STACK_PROJECT_ID=${{ secrets.NEXT_PUBLIC_STACK_PROJECT_ID }}
             NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}

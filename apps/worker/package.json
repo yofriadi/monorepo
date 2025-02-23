@@ -12,7 +12,6 @@
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.36.0",
     "@types/bun": "latest",
-    "@types/express": "^5.0.0",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.4",
     "prettier": "3.5.1",

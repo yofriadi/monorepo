@@ -79,5 +79,6 @@ EXPOSE 3000
 
 # Start the production server
 WORKDIR /app/apps/scraping
+
 CMD ["bun", "run", "server.js"]
 
