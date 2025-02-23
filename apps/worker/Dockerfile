@@ -27,6 +27,7 @@ RUN bun build \
 
 # Build as release
 FROM oven/bun:alpine
+
 WORKDIR /app
 
 COPY --from=base /app/apps/worker/index .
