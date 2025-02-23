@@ -115,3 +115,6 @@ jobs:
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/scraping:buildcache,mode=max
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_STACK_PROJECT_ID=${{ secrets.NEXT_PUBLIC_STACK_PROJECT_ID }}
+            NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
+            STACK_SECRET_SERVER_KEY=${{ secrets.STACK_SECRET_SERVER_KEY }}
