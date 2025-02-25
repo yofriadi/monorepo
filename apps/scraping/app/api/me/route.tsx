@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+export async function GET() {
+  try {
+    const cookieStore = cookies();
+    const authToken = (await cookieStore).get('auth_token');
+
+    if (!authToken) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_STACK_API_URL;
+    const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
+    const publish = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+
+    const response = await fetch(`${apiUrl}/api/v1/users/me`, {
+      headers: {
+        "x-stack-access-type": "client",
+        "x-stack-project-id": projectId!,
+        "x-stack-access-token": authToken.value,
+        "x-stack-publishable-client-key": publish,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      return NextResponse.json(
+        { error: error?.message || "Failed to fetch user data" },
+        { status: response.status }
+      );
+    }
+
+    const userData = await response.json();
+    return NextResponse.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return NextResponse.json(
+      { error: "An unexpected error occurred" },
+      { status: 500 }
+    );
+  }
+}
