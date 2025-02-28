@@ -11,6 +11,7 @@ import { lookupPrice } from "./lookup-price";
 
 const app = new Elysia()
   .use(swagger({
+    path: '/api/swagger',
     documentation: {
       info: {
         title: 'Scraping Documentation',
@@ -30,7 +31,7 @@ const app = new Elysia()
     if (code === 'NOT_FOUND') return
       console.error(error) 
     })
-  .group("/api", app => app
+  .group("/api/scraping", app => app
     .use(health)
     .use(brand)
     .use(model)
