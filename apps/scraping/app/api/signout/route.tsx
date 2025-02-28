@@ -30,8 +30,6 @@ export async function POST(request: Request) {
       try {
         const headers: Record<string, string> = {
           "x-stack-access-type": "client",
-          //"x-stack-project-id": projectId,
-          //"x-stack-publishable-client-key": process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY,
           "x-stack-refresh-token": refreshToken,
         };
 
@@ -67,3 +65,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
