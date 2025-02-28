@@ -13,7 +13,7 @@ export interface CreateSourceInput {
 export const createSourceMutation = {
   mutationKey: [MUTATION_KEY_CREATE_SOURCE],
   mutationFn: async (input: CreateSourceInput) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}source`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/source`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),

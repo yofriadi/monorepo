@@ -64,6 +64,9 @@ export const snapshot = new Elysia()
     query: t.Object({
       sourceIds: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Snapshot']
+    }
   })
   .get('/snapshot/:id', async ({ snapshot, params: { id }, error }) => {
     try {
@@ -76,6 +79,9 @@ export const snapshot = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Snapshot']
+    }
   })
   .post('/snapshot', async ({ snapshot, body, error }) => {
     try {
@@ -91,6 +97,9 @@ export const snapshot = new Elysia()
       url: t.String(),
       extractedData: t.Optional(t.Any()),
     }),
+    detail: {
+      tags: ['Snapshot']
+    }
   })
   .patch('/snapshot/:id', async ({ snapshot, params: { id }, body, error }) => {
     try {
@@ -107,6 +116,9 @@ export const snapshot = new Elysia()
       url: t.Optional(t.String()),
       extractedData: t.Optional(t.Any()),
     }),
+    detail: {
+      tags: ['Snapshot']
+    }
   })
   .delete('/snapshot/:id', async ({ snapshot, params: { id }, error }) => {
     try {
@@ -119,4 +131,7 @@ export const snapshot = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Snapshot']
+    }
   })

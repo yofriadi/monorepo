@@ -107,6 +107,9 @@ export const source = new Elysia()
     query: t.Object({
       productIds: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Source']
+    }
   })
   .get('/source/:id', async ({ source, params: { id }, error }) => {
     try {
@@ -119,6 +122,9 @@ export const source = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Source']
+    }
   })
   .post('/source', async ({ source, body, error }) => {
     try {
@@ -132,6 +138,9 @@ export const source = new Elysia()
       productId: t.String(),
       url: t.String(),
     }),
+    detail: {
+      tags: ['Source']
+    }
   })
   .patch('/source/:id', async ({ source, params: { id }, body, error }) => {
     try {
@@ -147,6 +156,9 @@ export const source = new Elysia()
     body: t.Object({
       platform: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Source']
+    }
   })
   .delete('/source/:id', async ({ source, params: { id }, error }) => {
     try {
@@ -159,7 +171,8 @@ export const source = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Source']
+    }
   })
-
-
 

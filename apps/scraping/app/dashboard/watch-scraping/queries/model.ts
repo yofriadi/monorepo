@@ -13,7 +13,7 @@ export interface Model {
 export const modelOptions = (brandId: string) => queryOptions({
   queryKey: [QUERY_KEY_GET_MODELS, brandId],
   queryFn: async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brand/${brandId}/models`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brand/${brandId}/models`)
     if (!response.ok) {
       throw new Error('Failed to fetch models')
     }
@@ -30,7 +30,7 @@ export interface CreateModelInput {
 export const createModel = {
   mutationKey: [MUTATION_KEY_CREATE_MODEL],
   mutationFn: async (input: CreateModelInput) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}model`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/model`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),

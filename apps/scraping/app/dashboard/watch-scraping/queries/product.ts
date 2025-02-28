@@ -13,7 +13,7 @@ export interface Product {
 export const productOptions = (modelId: string) => queryOptions({
   queryKey: [QUERY_KEY_GET_PRODUCTS, modelId],
   queryFn: async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}model/${modelId}/products`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/model/${modelId}/products`)
     if (!response.ok) {
       throw new Error('Failed to fetch products')
     }
@@ -29,7 +29,7 @@ export interface CreateProductInput {
 export const createProduct = {
   mutationKey: [MUTATION_KEY_CREATE_PRODUCT],
   mutationFn: async (input: CreateProductInput) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}product`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
