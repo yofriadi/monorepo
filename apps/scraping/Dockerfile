@@ -56,6 +56,10 @@ RUN --mount=type=secret,id=NEXT_PUBLIC_API_URL \
     export NEXT_PUBLIC_STACK_PROJECT_ID=$(cat /run/secrets/NEXT_PUBLIC_STACK_PROJECT_ID) && \
     export NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=$(cat /run/secrets/NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) && \
     export STACK_SECRET_SERVER_KEY=$(cat /run/secrets/STACK_SECRET_SERVER_KEY) && \
+    echo "NEXT_PUBLIC_API_URL: $NEXT_PUBLIC_API_URL" && \
+    echo "NEXT_PUBLIC_STACK_PROJECT_ID: $NEXT_PUBLIC_STACK_PROJECT_ID" && \
+    echo "NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: $NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY" && \
+    echo "STACK_SECRET_SERVER_KEY: $STACK_SECRET_SERVER_KEY" && \
     pnpm run build
 
 # ---- Runner Stage: Create the minimal production image ----
