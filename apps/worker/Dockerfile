@@ -32,6 +32,4 @@ WORKDIR /app
 
 COPY --from=base /app/apps/worker/index .
 
-EXPOSE 3003
-
 CMD ["bun", "run", "./index"]

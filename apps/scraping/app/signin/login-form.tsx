@@ -50,10 +50,10 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         setError(data?.error || "Login failed. Please try again.");
       } else {
         setSuccess("Login successful! Redirecting...");
-        
+
         setEmail("");
         setPassword("");
-        
+
         router.push('/dashboard');
       }
     } catch (err) {
@@ -115,3 +115,4 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     </div>
   );
 }
+

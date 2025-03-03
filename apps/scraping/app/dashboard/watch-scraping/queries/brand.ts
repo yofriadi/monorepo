@@ -14,7 +14,7 @@ export interface Brand {
 export const brandOptions = queryOptions({
   queryKey: [QUERY_KEY_GET_BRANDS],
   queryFn: async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brands`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brands`)
     if (!response.ok) {
       throw new Error('Failed to fetch brands')
     }
@@ -30,7 +30,7 @@ export interface CreateBrandInput {
 export const createBrand = {
   mutationKey: [MUTATION_KEY_CREATE_BRAND],
   mutationFn: async (input: CreateBrandInput) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}brand`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/brand`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),

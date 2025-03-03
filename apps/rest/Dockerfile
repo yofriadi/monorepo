@@ -35,7 +35,7 @@ WORKDIR /app
 # Copy the built script from the build stage
 COPY --from=build /app/apps/rest/index .
 
-EXPOSE 3002
+EXPOSE 3001
 
 # Run the built script using Bun
 CMD ["bun", "run", "./index"]

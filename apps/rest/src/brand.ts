@@ -65,6 +65,10 @@ export const brand = new Elysia()
   .decorate('brand', new Brand(db))
   .get('/brands', async ({ brand }) => {
     return await brand.getAll()
+  }, {
+    detail: {
+      tags: ['Brand']
+    }
   })
   .get('/brand/:id', async ({ brand, params: { id }, error }) => {
     try {
@@ -77,6 +81,9 @@ export const brand = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Brand']
+    }
   })
   .get('/brand/:id/models', async ({ brand, params: { id } }) => {
     return await brand.getModels(id)
@@ -85,6 +92,9 @@ export const brand = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Brand']
+    }
   })
   .post('/brand', async ({ brand, body, error }) => {
     try {
@@ -98,6 +108,9 @@ export const brand = new Elysia()
       name: t.String(),
       altName: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Brand']
+    }
   })
   .patch('/brand/:id', async ({ brand, params: { id }, body, error }) => {
     try {
@@ -114,6 +127,9 @@ export const brand = new Elysia()
       name: t.Optional(t.String()),
       altName: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Brand']
+    }
   })
   .delete('/brand/:id', async ({ brand, params: { id }, error }) => {
     try {
@@ -126,4 +142,7 @@ export const brand = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Brand']
+    }
   })

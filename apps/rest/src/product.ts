@@ -120,6 +120,9 @@ export const product = new Elysia()
     query: t.Object({
       modelIds: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Product']
+    }
   })
   .get('/product/:id', async ({ product, params: { id }, error }) => {
     try {
@@ -132,6 +135,9 @@ export const product = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Product']
+    }
   })
   .post('/product', async ({ product, body, error }) => {
     try {
@@ -145,6 +151,9 @@ export const product = new Elysia()
       modelId: t.String(),
       referenceNumber: t.String(),
     }),
+    detail: {
+      tags: ['Product']
+    }
   })
   .patch('/product/:id', async ({ product, params: { id }, body, error }) => {
     try {
@@ -160,6 +169,9 @@ export const product = new Elysia()
     body: t.Object({
       referenceNumber: t.Optional(t.String()),
     }),
+    detail: {
+      tags: ['Product']
+    }
   })
   .delete('/product/:id', async ({ product, params: { id }, error }) => {
     try {
@@ -172,5 +184,8 @@ export const product = new Elysia()
     params: t.Object({
       id: t.String(),
     }),
+    detail: {
+      tags: ['Product']
+    }
   })
 

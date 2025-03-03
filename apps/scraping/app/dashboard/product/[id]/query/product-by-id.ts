@@ -17,7 +17,7 @@ export interface ProductSnapshot {
 export const productSnapshots = (id: string) => queryOptions({
   queryKey: [QUERY_KEY_PRODUCT_SNAPSHOTS, id],
   queryFn: async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}product/${id}`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/product/${id}`)
     if (!response.ok) {
       throw new Error('Failed to fetch product snapshots')
     }

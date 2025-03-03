@@ -77,9 +77,17 @@ export const lookupPrice = new Elysia()
   .decorate('lookupPrice', new LookupPrice(db))
   .get('/lookup-prices', async ({ lookupPrice }) => {
     return await lookupPrice.getAll()
+  }, {
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .get('/lookup-prices/by-type', async ({ lookupPrice }) => {
     return await lookupPrice.getAllByType()
+  }, {
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .get('/lookup-prices/:type', async ({ lookupPrice, params: { type }, error }) => {
     try {
@@ -98,7 +106,10 @@ export const lookupPrice = new Elysia()
         condition: 'condition',
         'reference number': 'reference number'
       })
-    })
+    }),
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .get('/lookup-price/:id', async ({ lookupPrice, params: { id }, error }) => {
     try {
@@ -109,7 +120,10 @@ export const lookupPrice = new Elysia()
   }, {
     params: t.Object({
       id: t.String(),
-    })
+    }),
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .post('/lookup-price', async ({ lookupPrice, body }) => {
     return await lookupPrice.create(body)
@@ -126,7 +140,10 @@ export const lookupPrice = new Elysia()
       }),
       parameter: t.String(),
       value: t.Number(),
-    })
+    }),
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .put('/lookup-price/:id', async ({ lookupPrice, params: { id }, body, error }) => {
     try {
@@ -142,6 +159,9 @@ export const lookupPrice = new Elysia()
       parameter: t.String(),
       value: t.Number(),
     }),
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
   .delete('/lookup-price/:id', async ({ lookupPrice, params: { id }, error }) => {
     try {
@@ -152,6 +172,9 @@ export const lookupPrice = new Elysia()
   }, {
     params: t.Object({
       id: t.String(),
-    })
+    }),
+    detail: {
+      tags: ['Lookup Price']
+    }
   })
 
