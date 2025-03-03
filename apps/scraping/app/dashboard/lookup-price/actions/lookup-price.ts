@@ -3,7 +3,7 @@
 import { LookupPrice, LookupPricesByType } from '../types'
 
 export async function getLookupPricesByType(): Promise<LookupPricesByType> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}lookup-prices/by-type`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lookup-prices/by-type`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ export async function getLookupPricesByType(): Promise<LookupPricesByType> {
 }
 
 export async function updateLookupPrice(id: string, payload: { parameter: string; value: number }): Promise<LookupPrice> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}lookup-price/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lookup-price/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export async function updateLookupPrice(id: string, payload: { parameter: string
 }
 
 export async function deleteLookupPrice(id: string): Promise<LookupPrice> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}lookup-price/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lookup-price/${id}`, {
     method: 'DELETE',
   })
 
@@ -47,7 +47,7 @@ export async function deleteLookupPrice(id: string): Promise<LookupPrice> {
 }
 
 export async function createLookupPrice(payload: { parameter: string; value: number; type: string }): Promise<LookupPrice> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}lookup-price`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lookup-price`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
