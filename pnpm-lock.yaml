@@ -29,9 +29,12 @@ importers:
       '@dotenvx/dotenvx':
         specifier: ^1.36.0
         version: 1.36.0
+      '@elysiajs/cors':
+        specifier: ^1.2.0
+        version: 1.2.0(elysia@1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))
       '@elysiajs/swagger':
         specifier: ^1.2.0
-        version: 1.2.0(elysia@1.2.15(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))
+        version: 1.2.0(elysia@1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))
       '@workspace/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -40,13 +43,13 @@ importers:
         version: 5.4.4
       drizzle-orm:
         specifier: ^0.39.3
-        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3)
+        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3)
       drizzle-typebox:
         specifier: ^0.3.0
-        version: 0.3.0(@sinclair/typebox@0.34.16)(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3))
+        version: 0.3.0(@sinclair/typebox@0.34.16)(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3))
       elysia:
         specifier: latest
-        version: 1.2.15(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
+        version: 1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
       pg:
         specifier: ^8.13.3
         version: 8.13.3
@@ -56,7 +59,7 @@ importers:
         version: 8.11.11
       bun-types:
         specifier: latest
-        version: 1.2.2
+        version: 1.2.4
       drizzle-kit:
         specifier: ^0.30.4
         version: 0.30.4
@@ -156,7 +159,7 @@ importers:
         version: 1.0.0
       drizzle-orm:
         specifier: ^0.39.3
-        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3)
+        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3)
       elysia:
         specifier: ^1.2.12
         version: 1.2.14(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
@@ -175,7 +178,7 @@ importers:
         version: 1.36.0
       '@types/bun':
         specifier: latest
-        version: 1.2.2
+        version: 1.2.4
       '@types/pg':
         specifier: ^8.11.11
         version: 8.11.11
@@ -196,7 +199,7 @@ importers:
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.39.3
-        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3)
+        version: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3)
       node-pg-migrate:
         specifier: ^7.9.1
         version: 7.9.1(@types/pg@8.11.11)(pg@8.13.3)
@@ -212,7 +215,7 @@ importers:
         version: 1.36.0
       '@types/bun':
         specifier: latest
-        version: 1.2.2
+        version: 1.2.4
       '@types/pg':
         specifier: ^8.11.11
         version: 8.11.11
@@ -567,6 +570,11 @@ packages:
     engines: {bun: '>=1', deno: '>=2', node: '>=16'}
     peerDependencies:
       '@noble/ciphers': ^1.0.0
+
+  '@elysiajs/cors@1.2.0':
+    resolution: {integrity: sha512-qsJwDAg6WfdQRMfj6uSMcDPSpXvm/zQFeAX1uuJXhIgazH8itSfcDxcH9pMuXVRX1yQNi2pPwNQLJmAcw5mzvw==}
+    peerDependencies:
+      elysia: '>= 1.2.0'
 
   '@elysiajs/swagger@1.2.0':
     resolution: {integrity: sha512-OPx93DP6rM2VHjA3D44Xiz5MYm9AYlO2NGWPsnSsdyvaOCiL9wJj529583h7arX4iIEYE5LiLB0/A45unqbopw==}
@@ -2282,8 +2290,8 @@ packages:
   '@tybys/wasm-util@0.8.3':
     resolution: {integrity: sha512-Z96T/L6dUFFxgFJ+pQtkPpne9q7i6kIPYCFnQBHSgSPV9idTsKfIhCss0h5iM9irweZCatkrdeP8yi5uM1eX6Q==}
 
-  '@types/bun@1.2.2':
-    resolution: {integrity: sha512-tr74gdku+AEDN5ergNiBnplr7hpDp3V1h7fqI2GcR/rsUaM39jpSeKH0TFibRvU0KwniRx5POgaYnaXbk0hU+w==}
+  '@types/bun@1.2.4':
+    resolution: {integrity: sha512-QtuV5OMR8/rdKJs213iwXDpfVvnskPXY/S0ZiFbsTjQZycuqPbMW8Gf/XhLfwE5njW8sxI2WjISURXPlHypMFA==}
 
   '@types/d3-array@3.2.1':
     resolution: {integrity: sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg==}
@@ -2619,8 +2627,8 @@ packages:
   bullmq@5.41.0:
     resolution: {integrity: sha512-GGfKu2DHGIvbnMtQjR/82wvWsdCaGxN5JGR3pvKd1mkDI9DsWn8r0+pAzZ6Y4ImWXFaetaAqywOhv2Ik0R2m3g==}
 
-  bun-types@1.2.2:
-    resolution: {integrity: sha512-RCbMH5elr9gjgDGDhkTTugA21XtJAy/9jkKe/G3WR2q17VPGhcquf9Sir6uay9iW+7P/BV0CAHA1XlHXMAVKHg==}
+  bun-types@1.2.4:
+    resolution: {integrity: sha512-nDPymR207ZZEoWD4AavvEaa/KZe/qlrbMSchqpQwovPZCKc7pwMoENjEtHgMKaAjJhy+x6vfqSBA1QU3bJgs0Q==}
 
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
@@ -3138,8 +3146,8 @@ packages:
       typescript:
         optional: true
 
-  elysia@1.2.15:
-    resolution: {integrity: sha512-/oUSNb83jIWAGi6uSmbQ7Uy0RSJ9NimbVToSLnYS8jjsGId3zgdHqprsdf4rIMInOmEM8skjsFhZ4x8C5AB6+w==}
+  elysia@1.2.24:
+    resolution: {integrity: sha512-z849iAFdOCLd/a/ra3dtOmMd9jN4ow1G5Enq5RRRfheu/HEcO61cnwSaj0EScbT91pDiVbozhzqxF/K6b6amEw==}
     peerDependencies:
       '@sinclair/typebox': '>= 0.34.0'
       openapi-types: '>= 12.0.0'
@@ -5555,11 +5563,15 @@ snapshots:
     dependencies:
       '@noble/ciphers': 1.2.1
 
-  '@elysiajs/swagger@1.2.0(elysia@1.2.15(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))':
+  '@elysiajs/cors@1.2.0(elysia@1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))':
+    dependencies:
+      elysia: 1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
+
+  '@elysiajs/swagger@1.2.0(elysia@1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3))':
     dependencies:
       '@scalar/themes': 0.9.66
       '@scalar/types': 0.0.12
-      elysia: 1.2.15(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
+      elysia: 1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3)
       openapi-types: 12.1.3
       pathe: 1.1.2
 
@@ -7102,9 +7114,9 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/bun@1.2.2':
+  '@types/bun@1.2.4':
     dependencies:
-      bun-types: 1.2.2
+      bun-types: 1.2.4
 
   '@types/d3-array@3.2.1': {}
 
@@ -7518,7 +7530,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  bun-types@1.2.2:
+  bun-types@1.2.4:
     dependencies:
       '@types/node': 22.13.4
       '@types/ws': 8.5.14
@@ -7937,17 +7949,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3):
+  drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.11.11
-      bun-types: 1.2.2
+      bun-types: 1.2.4
       pg: 8.13.3
 
-  drizzle-typebox@0.3.0(@sinclair/typebox@0.34.16)(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3)):
+  drizzle-typebox@0.3.0(@sinclair/typebox@0.34.16)(drizzle-orm@0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3)):
     dependencies:
       '@sinclair/typebox': 0.34.16
-      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.2)(pg@8.13.3)
+      drizzle-orm: 0.39.3(@opentelemetry/api@1.9.0)(@types/pg@8.11.11)(bun-types@1.2.4)(pg@8.13.3)
 
   dunder-proto@1.0.1:
     dependencies:
@@ -7989,7 +8001,7 @@ snapshots:
       openapi-types: 12.1.3
       typescript: 5.7.3
 
-  elysia@1.2.15(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3):
+  elysia@1.2.24(@sinclair/typebox@0.34.16)(openapi-types@12.1.3)(typescript@5.7.3):
     dependencies:
       '@sinclair/typebox': 0.34.16
       cookie: 1.0.2

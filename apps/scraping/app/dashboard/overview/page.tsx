@@ -1,13 +1,21 @@
-import { Button } from "@workspace/ui/components/button"
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query"
+import { getQueryClient } from "@/lib/providers/get-query-client"
+import { brandOptions } from "./query/brands"
+import { snapshotOptions } from "./query/snapshots"
 
-export default function Overview() {
+import { columns } from "./columns"
+import { DataTable } from "./data-table"
+
+export default async function Overview() {
+  const queryClient = getQueryClient()
+  void queryClient.prefetchQuery(brandOptions)
+  void queryClient.prefetchQuery(snapshotOptions)
+
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
-        <Button size="sm">Button</Button>
-      </div>
+    <div className="text-xl flex flex-col my-5 mx-5">
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <DataTable columns={columns} />
+      </HydrationBoundary>
     </div>
   )
 }
-
