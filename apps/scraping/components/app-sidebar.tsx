@@ -12,6 +12,7 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  LayoutDashboard,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -25,7 +26,6 @@ import {
   SidebarRail,
 } from "@workspace/ui/components/sidebar"
 
-// TODO: this is sample data.
 const data = {
   user: {
     name: "shadcn",
@@ -51,22 +51,23 @@ const data = {
   ],
   navMain: [
     {
+      title: "Dashboard",
+      url: "/dashboard/overview",
+      icon: LayoutDashboard,
+    },
+    {
       title: "Watch",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "Brand",
-          url: "#",
+          title: "Lookup Price",
+          url: "/dashboard/lookup-price",
         },
         {
-          title: "Model",
-          url: "#",
-        },
-        {
-          title: "Product",
-          url: "#",
+          title: "Form",
+          url: "/dashboard/watch-scraping",
         },
       ],
     },
@@ -83,10 +84,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
 }
-

@@ -1,20 +1,41 @@
 import { Elysia, t } from 'elysia'
-import { eq, inArray } from 'drizzle-orm'
+import { desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import { db } from "@workspace/db";
-import { snapshotsInWatchScraping } from "@workspace/db/drizzle/schema";
+import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping } from "@workspace/db/drizzle/schema";
 
 class Snapshot {
   constructor(public db) {}
 
   async getAll(sourceIds?: string) {
-    let query = this.db.select().from(snapshotsInWatchScraping)
+    let query = this.db.select({
+      snapshotId: snapshotsInWatchScraping.id,
+      url: snapshotsInWatchScraping.url,
+      createdAt: snapshotsInWatchScraping.createdAt,
+      updatedAt: snapshotsInWatchScraping.updatedAt,
+      extractedData: snapshotsInWatchScraping.extractedData,
+      sourceId: sourcesInWatchScraping.id,
+      platform: sourcesInWatchScraping.platform,
+      productId: productsInWatchScraping.id,
+      referenceNumber: productsInWatchScraping.referenceNumber,
+      modelId: modelsInWatchScraping.id,
+      modelName: modelsInWatchScraping.name,
+      brandId: brandsInWatchScraping.id,
+      brandName: brandsInWatchScraping.name,
+    })
+      .from(snapshotsInWatchScraping)
+      .leftJoin(sourcesInWatchScraping, eq(snapshotsInWatchScraping.sourceId, sourcesInWatchScraping.id))
+      .leftJoin(productsInWatchScraping, eq(sourcesInWatchScraping.productId, productsInWatchScraping.id))
+      .leftJoin(modelsInWatchScraping, eq(productsInWatchScraping.modelId, modelsInWatchScraping.id))
+      .leftJoin(brandsInWatchScraping, eq(modelsInWatchScraping.brandId, brandsInWatchScraping.id))
+      .where(isNotNull(snapshotsInWatchScraping.sourceId));
 
-    if (sourceIds) {
-      query.where(inArray(snapshotsInWatchScraping.sourceId, sourceIds.split(',')));
+    if (sourceIds && sourceIds.length > 0) {
+      const sourceIdsArray = sourceIds.split(',');
+      query = query.where(inArray(snapshotsInWatchScraping.sourceId, sourceIdsArray));
     }
 
-    const sources = await query
-    return sources
+    const result = await query.orderBy(desc(snapshotsInWatchScraping.createdAt));
+    return result;
   }
 
   async getById(id: string) {

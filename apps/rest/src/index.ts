@@ -1,6 +1,5 @@
 import { Elysia } from "elysia";
 import { swagger } from '@elysiajs/swagger'
-
 import { health } from './health';
 import { brand } from "./brand";
 import { model } from "./model";

@@ -1,13 +1,14 @@
-import { Button } from "@workspace/ui/components/button"
+import { Suspense } from "react"
+
+import { columns } from "./columns"
+import { DataTable } from "./data-table"
 
 export default function Overview() {
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <div className="flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Hello World</h1>
-        <Button size="sm">Button</Button>
-      </div>
+    <div className="text-xl flex flex-col my-5 mx-5">
+      <Suspense fallback={<div>Loading...</div>}>
+        <DataTable columns={columns as any} />
+      </Suspense>
     </div>
   )
 }
-
