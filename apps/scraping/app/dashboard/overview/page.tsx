@@ -3,6 +3,9 @@ import { Suspense } from "react"
 import { columns } from "./columns"
 import { DataTable } from "./data-table"
 
+// Prevent static prerendering
+export const dynamic = 'force-dynamic'
+
 export default function Overview() {
   return (
     <div className="text-xl flex flex-col my-5 mx-5">
