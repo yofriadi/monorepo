@@ -15,15 +15,19 @@ export async function GET() {
 
     const apiUrl = process.env.NEXT_PUBLIC_STACK_API_URL;
     const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
-    const publish = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+
+    const headers: Record<string, string> = {
+      "x-stack-access-type": "client",
+      "x-stack-project-id": projectId!,
+      "x-stack-access-token": authToken.value,
+    }
+
+    if (process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) {
+      headers["x-stack-publishable-client-key"] = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
+    }
 
     const response = await fetch(`${apiUrl}/api/v1/users/me`, {
-      headers: {
-        "x-stack-access-type": "client",
-        "x-stack-project-id": projectId!,
-        "x-stack-access-token": authToken.value,
-        "x-stack-publishable-client-key": publish,
-      },
+      headers,
     });
 
     if (!response.ok) {

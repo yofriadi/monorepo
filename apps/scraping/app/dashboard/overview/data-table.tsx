@@ -22,13 +22,12 @@ import { Button } from "@workspace/ui/components/button"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { useToast } from "@workspace/ui/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { columns } from "./columns" // Impor columns dari file terpisah
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+interface DataTableProps<TData> {
+  columns: (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void) => ColumnDef<TData, any>[]
 }
 
-export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [pendingColumnFilters, setPendingColumnFilters] = useState<ColumnFiltersState>([])
   const [displayData, setDisplayData] = useState<DisplayProduct[]>([])
@@ -41,26 +40,26 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TVal
   const { data: initialSnapshotsData = [] } = useSuspenseQuery(snapshotOptions)
 
   const brandFilter = columnFilters.find(filter => filter.id === "brandFilter")
-  const brandIds = brandFilter ? brandFilter.value : []
-  
+  const brandIds = brandFilter ? (brandFilter.value as string[]) : [];
+
   const modelFilter = columnFilters.find(filter => filter.id === "modelFilter")
-  const modelIds = modelFilter ? modelFilter.value : []
-  
+  const modelIds = modelFilter ? (modelFilter.value as string[]) : [];
+
   const productFilter = columnFilters.find(filter => filter.id === "productFilter")
-  const productIds = productFilter ? productFilter.value : []
+  const productIds = productFilter ? (productFilter.value as string[]) : [];
 
   const pendingBrandFilter = pendingColumnFilters.find(filter => filter.id === "brandFilter")
-  const pendingBrandIds = pendingBrandFilter ? pendingBrandFilter.value : []
-  
+  const pendingBrandIds = pendingBrandFilter ? (pendingBrandFilter.value as string[]) : [];
+
   const pendingModelFilter = pendingColumnFilters.find(filter => filter.id === "modelFilter")
-  const pendingModelIds = pendingModelFilter ? pendingModelFilter.value : []
+  const pendingModelIds = pendingModelFilter ? (pendingModelFilter.value as string[]) : [];
 
   const { data: modelsData = [] } = useSuspenseQuery(createModelsQueryOptions(pendingBrandIds.length > 0 ? pendingBrandIds : undefined))
   const { data: productData = [] } = useSuspenseQuery(createProductsQueryOptions(pendingModelIds.length > 0 ? pendingModelIds : undefined))
-  
+
   const [{ data: sourcesData = [] }, { data: filteredSnapshotsData = [] }] = useSuspenseQueries({
     queries: [
-      createSourcesQueryOptions(isFiltering ? (productIds.length > 0 ? productIds : productData.filter(p => 
+      createSourcesQueryOptions(isFiltering ? (productIds.length > 0 ? productIds : productData.filter(p =>
         !modelIds.length || modelIds.includes(p.modelId)
       ).map(p => p.id)) : undefined),
       createFilteredSnapshotsQueryOptions(filteredSourceIds)
@@ -90,50 +89,16 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TVal
   }, [filteredSnapshotsData, isFiltering]);
 
   const processSnapshotsToDisplayProducts = (snapshots: Snapshot[]): DisplayProduct[] => {
-    const displayProducts: DisplayProduct[] = [];
-    
-    snapshots.forEach(snapshot => {
-      if (snapshot.extractedData?.products && Array.isArray(snapshot.extractedData.products)) {
-        snapshot.extractedData.products.forEach(product => {
-          displayProducts.push({
-            ...product,
-            snapshotId: snapshot.snapshotId,
-            sourceId: snapshot.sourceId,
-            productId: snapshot.productId,
-            brandName: snapshot.brandName,
-            modelName: snapshot.modelName,
-            referenceNumber: snapshot.referenceNumber,
-            platform: snapshot.platform,
-            turnoverCategory: null,
-          });
-        });
-      } else if (snapshot.extractedData) {
-        const extractedData = snapshot.extractedData;
-        if (extractedData.price && extractedData.currency) {
-          displayProducts.push({
-            price: extractedData.price,
-            currency: extractedData.currency,
-            title: snapshot.referenceNumber,
-            subtitle: "",
-            location: "",
-            badgeText: "",
-            shippingFee: "",
-            productDetailLink: snapshot.url,
-            imageCarouselLinks: extractedData.imageCarouselLinks || [],
-            snapshotId: snapshot.snapshotId,
-            sourceId: snapshot.sourceId,
-            productId: snapshot.productId,
-            brandName: snapshot.brandName,
-            modelName: snapshot.modelName,
-            referenceNumber: snapshot.referenceNumber,
-            platform: snapshot.platform,
-            turnoverCategory: null,
-          });
-        }
-      }
-    });
-    
-    return displayProducts;
+    return snapshots.map(snapshot => ({
+      snapshotId: snapshot.snapshotId,
+      sourceId: snapshot.sourceId,
+      productId: snapshot.productId,
+      brandName: snapshot.brandName,
+      referenceNumber: snapshot.referenceNumber,
+      modelName: snapshot.modelName,
+      platform: snapshot.platform,
+      turnoverCategory: null,
+    }));
   };
 
   // Fungsi untuk memperbarui turnover category secara lokal
@@ -155,12 +120,12 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TVal
       resetFilters();
       return;
     }
-    
+
     setColumnFilters(pendingColumnFilters);
     setIsFiltering(true);
     setIsQueryLoading(true);
     setFilteredSourceIds(undefined);
-    
+
     toast({
       title: "Applying filters",
       description: "Get filtered data",
@@ -174,7 +139,7 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TVal
     setIsFiltering(false);
     setIsQueryLoading(false);
     setFilteredSourceIds(undefined);
-    
+
     toast({
       title: "Filters reset",
       description: "Showing all data",
@@ -241,14 +206,14 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData, TVal
           >
             Reset Filters
           </Button>
-          <Button 
-            onClick={applyFilters} 
+          <Button
+            onClick={applyFilters}
             className="h-8 px-2 lg:px-3"
             disabled={isQueryLoading}
           >
             {isQueryLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading...
               </>
             ) : (

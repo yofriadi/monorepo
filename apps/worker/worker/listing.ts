@@ -13,7 +13,16 @@ import { snapshotsInWatchScraping } from "@workspace/db/drizzle/schema";
 import { extractListing } from "../scripts/scrape_and_crawl";
 import { detailsQueue } from "./detail";
 
-export const listingQueue = new Queue(LISTING_QUEUE, { connection });
+export const listingQueue = new Queue(LISTING_QUEUE, { 
+  connection,
+  defaultJobOptions: {
+    attempts: 3, // Retry the job 3 times before marking as failed
+    backoff: {
+      type: 'exponential',
+      delay: 1000, // Initial delay of 1 second before the first retry
+    },
+  }
+});
 
 const worker = new Worker(
   LISTING_QUEUE,
@@ -114,6 +123,5 @@ worker.on("completed", (job) => {
 });
 
 worker.on("failed", (job, err) => {
-  console.error(`Job failed: ${job.id}, Error: ${err}`);
+  console.error(`Job failed after ${job.attemptsMade} attempts: ${job.id}, Error: ${err}`);
 });
-

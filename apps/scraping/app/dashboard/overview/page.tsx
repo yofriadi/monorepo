@@ -1,21 +1,17 @@
-import { HydrationBoundary, dehydrate } from "@tanstack/react-query"
-import { getQueryClient } from "@/lib/providers/get-query-client"
-import { brandOptions } from "./query/brands"
-import { snapshotOptions } from "./query/snapshots"
+import { Suspense } from "react"
 
 import { columns } from "./columns"
 import { DataTable } from "./data-table"
 
-export default async function Overview() {
-  const queryClient = getQueryClient()
-  void queryClient.prefetchQuery(brandOptions)
-  void queryClient.prefetchQuery(snapshotOptions)
+// Prevent static prerendering
+export const dynamic = 'force-dynamic'
 
+export default function Overview() {
   return (
     <div className="text-xl flex flex-col my-5 mx-5">
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <DataTable columns={columns} />
-      </HydrationBoundary>
+      <Suspense fallback={<div>Loading...</div>}>
+        <DataTable columns={columns as any} />
+      </Suspense>
     </div>
   )
 }
