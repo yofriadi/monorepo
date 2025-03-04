@@ -5,6 +5,10 @@ import { FormBrand } from "./form-brand"
 import { FormModel } from "./form-model"
 import { FormProduct } from "./form-product"
 import { FormSource } from "./form-source"
+import {
+  Card,
+  CardContent,
+} from "@workspace/ui/components/card"
 
 export function Form() {
   const [brandId, setBrandId] = useState<string>("")
@@ -27,29 +31,33 @@ export function Form() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <FormBrand 
-        brandId={brandId} 
-        setBrandId={setBrandId} 
-        onReset={resetAllStates} 
-      />
-      {!!brandId && (
-        <FormModel 
-          brandId={brandId} 
-          modelId={modelId} 
-          setModelId={setModelId} 
-          onReset={resetFromModel}
-        />
-      )}
-      {!!modelId && (
-        <FormProduct 
-          modelId={modelId} 
-          productId={productId} 
-          setProductId={setProductId} 
-          onReset={resetFromProduct}
-        />
-      )}
-      {!!productId && <FormSource productId={productId} />}
-    </div>
+    <Card className="w-full max-w-md mx-auto p-6 shadow-md">
+      <CardContent className="w-full">
+        <div className="grid w-full gap-6">
+          <FormBrand 
+            brandId={brandId} 
+            setBrandId={setBrandId} 
+            onReset={resetAllStates} 
+          />
+          {!!brandId && (
+            <FormModel 
+              brandId={brandId} 
+              modelId={modelId} 
+              setModelId={setModelId} 
+              onReset={resetFromModel}
+            />
+          )}
+          {!!modelId && (
+            <FormProduct 
+              modelId={modelId} 
+              productId={productId} 
+              setProductId={setProductId} 
+              onReset={resetFromProduct}
+            />
+          )}
+          {!!productId && <FormSource productId={productId} />}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

@@ -61,12 +61,10 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
         title: "Success",
         description: "Product created successfully",
       });
-
       if (product?.id) {
         setProductId(product.id);
         setProductNameInputDisabled(true);
       }
-
       setDialogOpen(false);
     },
     onError: (error) => {
@@ -115,19 +113,18 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
       modelId,
       referenceNumber: values.referenceNumber,
     });
-    setDialogOpen(false);
   }
 
   const { pending } = useFormStatus();
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
           name="referenceNumber"
           render={({ field }) => (
-            <FormItem className="mb-1">
+            <FormItem className="w-full">
               <FormLabel>Product</FormLabel>
               <FormControl>
                 <InputDropdown<Product>
@@ -152,9 +149,8 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
             </FormItem>
           )}
         />
-
         {!productId && (
-          <div className="flex gap-4 mt-4">
+          <div className="flex gap-4 w-full">
             <Button
               type="button"
               variant="outline"
@@ -179,9 +175,8 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
             </Button>
           </div>
         )}
-
         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="space-y-6">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create New Product?</DialogTitle>
               <DialogDescription>
@@ -195,9 +190,9 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
                 </Button>
               </DialogClose>
               <ActionButton
-                type="submit"
+                type="button"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                isPending={pending}
+                isPending={mutation.isPending || pending}
               >
                 Confirm and Create
               </ActionButton>
@@ -208,4 +203,3 @@ export function FormProduct({ modelId, productId, setProductId, onReset }: {
     </Form>
   );
 }
-

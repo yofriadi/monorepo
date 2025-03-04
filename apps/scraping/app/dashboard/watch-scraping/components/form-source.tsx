@@ -64,19 +64,18 @@ export function FormSource({ productId }: { productId: string }) {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     mutation.mutate({ productId, url: values.url });
-    setDialogOpen(false);
   }
 
   const { pending } = useFormStatus();
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
           name="url"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="w-full">
               <FormLabel>Source</FormLabel>
               <FormControl>
                 <Input placeholder="Url to scrape and crawl" {...field} />
@@ -88,7 +87,7 @@ export function FormSource({ productId }: { productId: string }) {
             </FormItem>
           )}
         />
-        <div className="flex gap-4 mt-4">
+        <div className="flex gap-4 w-full">
           <Button
             className="flex-1"
             type="button"
@@ -102,7 +101,7 @@ export function FormSource({ productId }: { productId: string }) {
             Create Scraping
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="space-y-6">
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Are you sure?</DialogTitle>
                 <DialogDescription>
@@ -131,4 +130,3 @@ export function FormSource({ productId }: { productId: string }) {
     </Form>
   );
 }
-

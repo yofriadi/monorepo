@@ -68,17 +68,14 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
     ...createModel,
     onSuccess: (newModel) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY_GET_MODELS, brandId] });
-
       toast({
         title: "Success",
         description: "Model created successfully",
       });
-
       if (newModel?.id) {
         setModelId(newModel.id);
         setModelNameInputDisabled(true);
       }
-
       setDialogOpen(false);
     },
     onError: (error) => {
@@ -96,7 +93,6 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
     const isFormEmpty = Object.values(formValues).every((value) => value === "");
     setIsResetDisabled(isFormEmpty);
   }, [formValues]);
-
 
   const handleInputChange = (value: string) => {
     form.setValue("name", value);
@@ -133,12 +129,12 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="mb-1">
+            <FormItem className="w-full">
               <FormLabel>Model</FormLabel>
               <FormControl>
                 <InputDropdown<Model>
@@ -162,15 +158,14 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
             </FormItem>
           )}
         />
-
         {showModelAltNameInput && (
           <FormField
             control={form.control}
             name="altName"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Alternative name" {...field} className="mt-1" />
+                  <Input placeholder="Alternative name" {...field} />
                 </FormControl>
                 <FormDescription>
                   This input is optional, use comma separated values.
@@ -180,9 +175,8 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
             )}
           />
         )}
-
         {!modelId && (
-          <div className="flex gap-4 mt-4">
+          <div className="flex gap-4 w-full">
             <Button
               type="button"
               variant="outline"
@@ -192,7 +186,6 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
             >
               Reset
             </Button>
-
             <Button
               type="button"
               className="flex-1"
@@ -208,9 +201,8 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
             </Button>
           </div>
         )}
-
         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="space-y-6">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create New Model?</DialogTitle>
               <DialogDescription>
@@ -224,9 +216,9 @@ export function FormModel({ brandId, modelId, setModelId, onReset }: {
                 </Button>
               </DialogClose>
               <ActionButton
-                type="submit"
+                type="button"
                 onClick={() => form.handleSubmit(onSubmit)()}
-                isPending={mutation.isPending || useFormStatus().pending}
+                isPending={mutation.isPending || pending}
               >
                 Confirm and Create
               </ActionButton>
