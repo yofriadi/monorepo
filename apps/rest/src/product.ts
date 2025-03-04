@@ -10,6 +10,12 @@ import {
   snapshotsInWatchScraping
 } from "@workspace/db/drizzle/schema";
 
+enum TurnoverCategory {
+  FAST = 'fast',
+  MODERATE = 'moderate',
+  SLOW = 'slow'
+}
+
 class Product {
   constructor(public db) {}
 
@@ -37,9 +43,9 @@ class Product {
           child_snapshot.extracted_data ->> 'currency' AS currency,
           child_snapshot.extracted_data ->> 'price' AS price,
           (
-		        SELECT string_agg(link, ', ')
-		        FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
-	        ) AS images
+            SELECT string_agg(link, ', ')
+            FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
+          ) AS images
         FROM
           watch_scraping.products product
           LEFT JOIN watch_scraping.models model ON product.model_id = model.id
@@ -49,12 +55,12 @@ class Product {
           LEFT JOIN watch_scraping.snapshots child_snapshot ON child_snapshot.parent_id = snapshot.id
         WHERE
           product.id = ${id}
-	        AND child_snapshot.extracted_data ->> 'currency' IS NOT NULL
-	        AND child_snapshot.extracted_data ->> 'price' IS NOT NULL
-	        AND (
-		        SELECT string_agg(link, ', ')
-		        FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
-	        ) IS NOT NULL;
+          AND child_snapshot.extracted_data ->> 'currency' IS NOT NULL
+          AND child_snapshot.extracted_data ->> 'price' IS NOT NULL
+          AND (
+            SELECT string_agg(link, ', ')
+            FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
+          ) IS NOT NULL;
       `
     );
 
@@ -91,7 +97,7 @@ class Product {
     return products[0]
   }
 
-  async update(id: string, data: { referenceNumber?: string }) {
+  async update(id: string, data: { referenceNumber?: string; turnoverCategory?: TurnoverCategory }) {
     const products = await this.db
       .update(productsInWatchScraping)
       .set({ ...data, updatedAt: new Date() })
@@ -155,7 +161,7 @@ export const product = new Elysia()
       tags: ['Product']
     }
   })
-  .patch('/product/:id', async ({ product, params: { id }, body, error }) => {
+  .put('/product/:id', async ({ product, params: { id }, body, error }) => {
     try {
       return await product.update(id, body)
     } catch {
@@ -168,6 +174,24 @@ export const product = new Elysia()
     }),
     body: t.Object({
       referenceNumber: t.Optional(t.String()),
+    }),
+    detail: {
+      tags: ['Product'],
+    },
+  })
+  .patch('/product/:id', async ({ product, params: { id }, body, error }) => {
+    try {
+      return await product.update(id, body)
+    } catch {
+      return error(404, 'Product not found')
+    }
+  },
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    body: t.Object({
+      turnoverCategory: t.Optional(t.Enum(TurnoverCategory)),
     }),
     detail: {
       tags: ['Product']
