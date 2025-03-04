@@ -2,7 +2,6 @@
 
 import type { ColumnDef } from "@tanstack/react-table"
 import { Button } from "@workspace/ui/components/button"
-import { DisplayProduct } from "./types"
 import { useRouter } from "next/navigation"
 import {
   DropdownMenu,
@@ -12,43 +11,34 @@ import {
 } from "@workspace/ui/components/dropdown-menu"
 import { MoreHorizontal } from "lucide-react"
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { DisplayProduct } from "./types"
 
 export const columns = (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void): ColumnDef<DisplayProduct>[] => [
   {
     id: "brandName",
-    header: "Brand",
+    header: "Brand Name",
     accessorFn: (row: DisplayProduct) => row.brandName,
     filterFn: "arrIncludesSome",
   },
   {
-    id: "modelName",
+    id: "model",
     header: "Model",
-    accessorFn: (row: DisplayProduct) => row.modelName,
-    filterFn: "arrIncludesSome",
-  },
-  {
-    id: "referenceNumber",
-    header: "Reference",
     accessorFn: (row: DisplayProduct) => row.referenceNumber,
     filterFn: "arrIncludesSome",
   },
   {
-    id: "price",
-    header: "Price",
-    accessorFn: (row: DisplayProduct) => {
-      if (!row.price) return "N/A";
-      const cleanPrice = row.price.replace(/\n/g, " ").trim();
-      const priceMatch = cleanPrice.match(/(\d{1,3}(?:,\d{3})*(?:\.\d+)?)$/);
-      return priceMatch ? `${row.currency || ""}${priceMatch[1]}` : cleanPrice;
-    },
+    id: "modelName",
+    header: "Model Name",
+    accessorFn: (row: DisplayProduct) => row.modelName,
+    filterFn: "arrIncludesSome",
   },
   {
-    id: "location",
-    header: "Location",
-    accessorFn: (row: DisplayProduct) => row.location,
+    id: "platform",
+    header: "Platform",
+    accessorFn: (row: DisplayProduct) => row.platform,
   },
   {
     id: "turnoverCategory",
@@ -65,7 +55,7 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
 
       const handleSaveTurnover = () => {
         const newTurnover = selectedTurnover === "" ? null : selectedTurnover;
-        updateTurnoverCategory(row.original.productId!, newTurnover); // Panggil fungsi untuk update state
+        updateTurnoverCategory(row.original.productId!, newTurnover);
         setIsEditOpen(false);
       };
 
@@ -125,3 +115,4 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     },
   },
 ];
+
