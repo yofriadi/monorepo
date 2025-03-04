@@ -1,6 +1,5 @@
 import { Elysia } from "elysia";
 import { swagger } from '@elysiajs/swagger'
-import { cors } from '@elysiajs/cors';
 import { health } from './health';
 import { brand } from "./brand";
 import { model } from "./model";
@@ -27,9 +26,6 @@ const app = new Elysia()
       ]
     },
   }))
-  .use(cors({ 
-    origin: '*' // Izinkan semua domain (bisa diganti dengan domain spesifik)
-  }))
   .onError(({ error , code }) => { 
     if (code === 'NOT_FOUND') return
       console.error(error) 
@@ -43,6 +39,5 @@ const app = new Elysia()
     .use(snapshot)
     .use(lookupPrice)
   ).listen(3001);
-  
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
