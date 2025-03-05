@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS watch_scraping.products (
   "id" text not null default typeid_generate_text('product') CHECK (typeid_check_text(id, 'product')),
   model_id text NOT NULL,
   reference_number varchar(50) NOT NULL,
+  turnover_category varchar(8) CHECK (turnover_category IN ('fast', 'moderate', 'slow')),
   created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp with time zone,
   UNIQUE(model_id, reference_number),
@@ -106,7 +107,7 @@ CREATE TRIGGER update_snapshots_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 COMMENT ON TABLE watch_scraping.snapshots IS 'Stores snapshot of scraping jobs. If scraping_source_id is null, then this is a snapshot of a product detail scraped from a product listing';
 
-CREATE TABLE message_queue (
+CREATE TABLE message_queues (
   "id" text not null default typeid_generate_text('messagequeue') CHECK (typeid_check_text(id, 'messagequeue')),
   topic VARCHAR(255) NOT NULL,
   payload jsonb NOT NULL,
@@ -115,14 +116,14 @@ CREATE TABLE message_queue (
   retries integer DEFAULT 0,
   PRIMARY KEY (id)
 );
-CREATE INDEX IF NOT EXISTS topic_status_idx ON message_queue (topic, status);
+CREATE INDEX IF NOT EXISTS topic_status_idx ON message_queues (topic, status);
 
 -- Down Migration
 -- Drop the triggers
 DROP TRIGGER IF EXISTS update_brands_updated_at ON watch_scraping.brands;
 
 -- Drop the tables
-DROP TABLE IF EXISTS message_queue;
+DROP TABLE IF EXISTS message_queues;
 DROP TABLE IF EXISTS watch_scraping.models;
 DROP TABLE IF EXISTS watch_scraping.brands;
 

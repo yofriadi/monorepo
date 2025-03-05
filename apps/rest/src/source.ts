@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { eq, sql, inArray } from 'drizzle-orm'
 import { db } from "@workspace/db";
-import { sourcesInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, messageQueue } from "@workspace/db/drizzle/schema";0
+import { sourcesInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, messageQueues } from "@workspace/db/drizzle/schema";0
 
 class Source {
   constructor(public db) {}
@@ -54,7 +54,7 @@ class Source {
         .returning();
 
       const [message] = await tx
-        .insert(messageQueue)
+        .insert(messageQueues)
         .values({
           topic: "scraping",
           payload: JSON.stringify({ snapshotId: createdSnapshot.id }),
