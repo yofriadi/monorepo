@@ -16,6 +16,11 @@ import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { DisplayProduct } from "./types"
 
+const capitalizeFirstLetter = (str: string | null | undefined): string => {
+  if (!str) return "Not Set";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 export const columns = (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void): ColumnDef<DisplayProduct>[] => [
   {
     id: "brandName",
@@ -43,7 +48,7 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
   {
     id: "turnoverCategory",
     header: "Turnover Category",
-    accessorFn: (row: DisplayProduct) => row.turnoverCategory || "Not Set",
+    accessorFn: (row: DisplayProduct) => capitalizeFirstLetter(row.turnoverCategory), // Gunakan fungsi kapitalisasi
   },
   {
     id: "actions",
@@ -96,7 +101,7 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="slow">Slow</SelectItem>
-                      <SelectItem value="middle">Middle</SelectItem>
+                      <SelectItem value="moderate">Moderate</SelectItem>
                       <SelectItem value="fast">Fast</SelectItem>
                     </SelectContent>
                   </Select>
@@ -115,4 +120,3 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     },
   },
 ];
-

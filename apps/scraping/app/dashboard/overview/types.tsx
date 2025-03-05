@@ -54,6 +54,7 @@ export type Snapshot = {
   modelName: string;
   brandId: string;
   brandName: string;
+  turnoverCategory?: string | null;
 }
 
 export type DisplayProduct = {
