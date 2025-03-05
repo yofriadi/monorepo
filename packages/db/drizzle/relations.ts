@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping } from "./schema";
+import { brandsInWatchScraping, modelsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping, productsInWatchScraping } from "./schema";
 
 export const modelsInWatchScrapingRelations = relations(modelsInWatchScraping, ({one, many}) => ({
 	brandsInWatchScraping: one(brandsInWatchScraping, {
@@ -11,14 +11,6 @@ export const modelsInWatchScrapingRelations = relations(modelsInWatchScraping, (
 
 export const brandsInWatchScrapingRelations = relations(brandsInWatchScraping, ({many}) => ({
 	modelsInWatchScrapings: many(modelsInWatchScraping),
-}));
-
-export const productsInWatchScrapingRelations = relations(productsInWatchScraping, ({one, many}) => ({
-	modelsInWatchScraping: one(modelsInWatchScraping, {
-		fields: [productsInWatchScraping.modelId],
-		references: [modelsInWatchScraping.id]
-	}),
-	sourcesInWatchScrapings: many(sourcesInWatchScraping),
 }));
 
 export const snapshotsInWatchScrapingRelations = relations(snapshotsInWatchScraping, ({one, many}) => ({
@@ -41,5 +33,13 @@ export const sourcesInWatchScrapingRelations = relations(sourcesInWatchScraping,
 	productsInWatchScraping: one(productsInWatchScraping, {
 		fields: [sourcesInWatchScraping.productId],
 		references: [productsInWatchScraping.id]
+	}),
+}));
+
+export const productsInWatchScrapingRelations = relations(productsInWatchScraping, ({one, many}) => ({
+	sourcesInWatchScrapings: many(sourcesInWatchScraping),
+	modelsInWatchScraping: one(modelsInWatchScraping, {
+		fields: [productsInWatchScraping.modelId],
+		references: [modelsInWatchScraping.id]
 	}),
 }));

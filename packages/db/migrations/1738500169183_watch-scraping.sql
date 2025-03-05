@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS watch_scraping.products (
   "id" text not null default typeid_generate_text('product') CHECK (typeid_check_text(id, 'product')),
   model_id text NOT NULL,
   reference_number varchar(50) NOT NULL,
-  turnover_category CHECK (turnover_category IN ('fast', 'moderate', 'slow')),
+  turnover_category varchar(8) CHECK (turnover_category IN ('fast', 'moderate', 'slow')),
   created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp with time zone,
   UNIQUE(model_id, reference_number),
