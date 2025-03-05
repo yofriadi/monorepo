@@ -4,7 +4,7 @@ import { db } from "@workspace/db";
 import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping } from "@workspace/db/drizzle/schema";
 
 class Snapshot {
-  constructor(public db) { }
+  constructor(public db) {}
 
   async getAll(sourceIds?: string) {
     let query = this.db.select({
@@ -82,14 +82,14 @@ export const snapshot = new Elysia()
   .get('/snapshots', async ({ snapshot, query: { sourceIds } }) => {
     return await snapshot.getAll(sourceIds)
   },
-    {
-      query: t.Object({
-        sourceIds: t.Optional(t.String()),
-      }),
-      detail: {
-        tags: ['Snapshot']
-      }
-    })
+  {
+    query: t.Object({
+      sourceIds: t.Optional(t.String()),
+    }),
+    detail: {
+      tags: ['Snapshot']
+    }
+  })
   .get('/snapshot/:id', async ({ snapshot, params: { id }, error }) => {
     try {
       return await snapshot.getById(id)
@@ -97,14 +97,14 @@ export const snapshot = new Elysia()
       return error(404, 'Snapshot not found')
     }
   },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      detail: {
-        tags: ['Snapshot']
-      }
-    })
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    detail: {
+      tags: ['Snapshot']
+    }
+  })
   .post('/snapshot', async ({ snapshot, body, error }) => {
     try {
       return await snapshot.create(body)
@@ -112,17 +112,17 @@ export const snapshot = new Elysia()
       return error(422, 'Unable to create snapshot')
     }
   },
-    {
-      body: t.Object({
-        sourceId: t.Optional(t.String()),
-        parentId: t.Optional(t.String()),
-        url: t.String(),
-        extractedData: t.Optional(t.Any()),
-      }),
-      detail: {
-        tags: ['Snapshot']
-      }
-    })
+  {
+    body: t.Object({
+      sourceId: t.Optional(t.String()),
+      parentId: t.Optional(t.String()),
+      url: t.String(),
+      extractedData: t.Optional(t.Any()),
+    }),
+    detail: {
+      tags: ['Snapshot']
+    }
+  })
   .patch('/snapshot/:id', async ({ snapshot, params: { id }, body, error }) => {
     try {
       return await snapshot.update(id, body)
@@ -130,18 +130,18 @@ export const snapshot = new Elysia()
       return error(404, 'Snapshot not found')
     }
   },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      body: t.Object({
-        url: t.Optional(t.String()),
-        extractedData: t.Optional(t.Any()),
-      }),
-      detail: {
-        tags: ['Snapshot']
-      }
-    })
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    body: t.Object({
+      url: t.Optional(t.String()),
+      extractedData: t.Optional(t.Any()),
+    }),
+    detail: {
+      tags: ['Snapshot']
+    }
+  })
   .delete('/snapshot/:id', async ({ snapshot, params: { id }, error }) => {
     try {
       return await snapshot.remove(id)
@@ -149,11 +149,11 @@ export const snapshot = new Elysia()
       return error(404, 'Snapshot not found')
     }
   },
-    {
-      params: t.Object({
-        id: t.String(),
-      }),
-      detail: {
-        tags: ['Snapshot']
-      }
-    })
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    detail: {
+      tags: ['Snapshot']
+    }
+  })
