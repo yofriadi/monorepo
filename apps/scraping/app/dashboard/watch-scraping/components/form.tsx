@@ -31,7 +31,7 @@ export function Form() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6 shadow-md">
+    <Card className="w-full max-w-md mx-auto p-6 border">
       <CardContent className="w-full">
         <div className="grid w-full gap-6">
           <FormBrand 
