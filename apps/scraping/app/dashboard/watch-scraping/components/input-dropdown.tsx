@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Input } from "@workspace/ui/components/input"
 import { Button } from "@workspace/ui/components/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@workspace/ui/components/command"
@@ -23,8 +22,8 @@ interface InputDropdownProps<T extends { id: string }> {
 }
 
 export function InputDropdown<T extends { id: string }>({
-  isOpen = false,
-  onToggle = () => {},
+  isOpen,
+  onToggle,
   options,
   isLoading,
   onSelectOption,
@@ -35,12 +34,6 @@ export function InputDropdown<T extends { id: string }>({
   optionKey = "id",
   optionLabel = "name" as keyof T,
 }: InputDropdownProps<T>) {
-  const [open, setOpen] = useState(isOpen)
-
-  useEffect(() => {
-    onToggle(open)
-  }, [open, onToggle])
-
   return (
     <div className="relative w-full">
       <div className="flex w-full">
@@ -57,15 +50,15 @@ export function InputDropdown<T extends { id: string }>({
         <Button
           type="button"
           variant="outline"
-          className={cn("rounded-l-none border-l-0", open && "bg-accent")}
+          className={cn("rounded-l-none border-l-0", isOpen && "bg-accent")}
           disabled={isDisabled}
-          onClick={() => setOpen(!open)}
+          onClick={() => onToggle(!isOpen)}
         >
-          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
       </div>
       
-      {open && (
+      {isOpen && (
         <div className="absolute w-full z-50 mt-1 rounded-md border bg-popover shadow-md">
           <Command>
             <CommandInput placeholder="Search..." />
@@ -80,7 +73,7 @@ export function InputDropdown<T extends { id: string }>({
                       key={option[optionKey] as string}
                       onSelect={() => {
                         onSelectOption(option)
-                        setOpen(false)
+                        onToggle(false) // Close dropdown on selection
                       }}
                     >
                       {(option[optionLabel] as string) || option.id}
