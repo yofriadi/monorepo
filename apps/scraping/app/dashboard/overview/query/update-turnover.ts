@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from "@workspace/ui/hooks/use-toast";
+import { TurnoverCategory, Snapshot, Product } from '../types';
 
 interface UpdateTurnoverParams {
   productId: string;
-  newTurnover: string | null;
+  newTurnover: TurnoverCategory | null;
 }
 
 const updateTurnoverCategoryFn = async ({ productId, newTurnover }: UpdateTurnoverParams) => {
@@ -28,8 +29,8 @@ export const useUpdateTurnoverCategory = () => {
   return useMutation({
     mutationFn: updateTurnoverCategoryFn,
     onSuccess: (_, variables) => {
-      const snapshotsCache = queryClient.getQueryData(['snapshots']) as any[] | undefined;
-      const productsCache = queryClient.getQueryData(['products']) as any[] | undefined;
+      const snapshotsCache = queryClient.getQueryData<Snapshot[]>(['snapshots']);
+      const productsCache = queryClient.getQueryData<Product[]>(['products']);
 
       let productName = 'Unknown Product';
       if (snapshotsCache) {
@@ -40,7 +41,7 @@ export const useUpdateTurnoverCategory = () => {
         if (product) productName = product.referenceNumber;
       }
 
-      queryClient.setQueryData(['snapshots'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<Snapshot[]>(['snapshots'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((snapshot) =>
           snapshot.productId === variables.productId
@@ -49,7 +50,7 @@ export const useUpdateTurnoverCategory = () => {
         );
       });
 
-      queryClient.setQueryData(['products'], (oldData: any[] | undefined) => {
+      queryClient.setQueryData<Product[]>(['products'], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map((product) =>
           product.id === variables.productId

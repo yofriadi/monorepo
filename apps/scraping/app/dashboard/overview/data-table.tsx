@@ -16,7 +16,7 @@ import { createProductsQueryOptions } from "./query/products"
 import { createSourcesQueryOptions } from "./query/sources"
 import { createFilteredSnapshotsQueryOptions } from "./query/filtered-snapshots"
 import { useUpdateTurnoverCategory } from "./query/update-turnover" // Impor mutasi
-import { Brand, Model, Product, Snapshot, DisplayProduct, Source } from "./types"
+import { Brand, Model, Product, Snapshot, DisplayProduct, Source, TurnoverCategory } from "./types"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
@@ -24,7 +24,7 @@ import { useToast } from "@workspace/ui/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
 interface DataTableProps<TData> {
-  columns: (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void) => ColumnDef<TData, any>[]
+  columns: (updateTurnoverCategory: (productId: string, newTurnover: TurnoverCategory | null) => void) => ColumnDef<TData, any>[]
 }
 
 export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const table = useReactTable({
     data: displayData as TData[],
-    columns: columns((productId, newTurnover) => updateTurnoverCategory({ productId, newTurnover })), // Panggil mutasi
+    columns: columns((productId, newTurnover) => updateTurnoverCategory({ productId, newTurnover })),
     getCoreRowModel: getCoreRowModel(),
   })
 
