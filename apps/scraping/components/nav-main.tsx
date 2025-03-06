@@ -34,7 +34,6 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Scraping</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           if (!item.items) {
