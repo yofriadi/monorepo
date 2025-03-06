@@ -1,10 +1,11 @@
 "use client"
 
-import { JSX, useRef, useEffect } from "react"
 import { Input } from "@workspace/ui/components/input"
 import { Button } from "@workspace/ui/components/button"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@workspace/ui/components/command"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { FormControl } from "@workspace/ui/components/form"
+import { cn } from "@workspace/ui/lib/utils"
 
 interface InputDropdownProps<T extends { id: string }> {
   isOpen: boolean
@@ -15,24 +16,12 @@ interface InputDropdownProps<T extends { id: string }> {
   onInputChange: (value: string) => void
   placeholder?: string
   value: string
-  isDisabled: boolean
+  isDisabled?: boolean
   optionKey?: keyof T
+  optionLabel?: keyof T
 }
 
-// Function overloads for type-safe usage
-interface InputDropdownComponent {
-  // Overload 1: When using default 'name' label
-  <T extends { id: string; name: string }>(
-    props: InputDropdownProps<T> & { optionLabel?: keyof T }
-  ): JSX.Element
-  
-  // Overload 2: When using custom label
-  <T extends { id: string }>(
-    props: InputDropdownProps<T> & { optionLabel: keyof T }
-  ): JSX.Element
-}
-
-const InputDropdown: InputDropdownComponent = <T extends { id: string }>({
+export function InputDropdown<T extends { id: string }>({
   isOpen,
   onToggle,
   options,
@@ -44,66 +33,58 @@ const InputDropdown: InputDropdownComponent = <T extends { id: string }>({
   isDisabled,
   optionKey = "id",
   optionLabel = "name" as keyof T,
-}: InputDropdownProps<T> & { optionLabel?: keyof T }) => {
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onToggle(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [onToggle])
-
+}: InputDropdownProps<T>) {
   return (
-    <div className="relative" ref={dropdownRef}>
-      <div className="flex">
+    <div className="relative w-full">
+      <div className="flex w-full">
         <FormControl>
           <Input
             type="text"
             value={value}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder={placeholder}
-            className="rounded-r-none"
+            className="rounded-r-none w-full"
             disabled={isDisabled}
           />
         </FormControl>
         <Button
           type="button"
-          onClick={() => onToggle(!isOpen)}
           variant="outline"
-          className="rounded-l-none border-l-0"
+          className={cn("rounded-l-none border-l-0", isOpen && "bg-accent")}
           disabled={isDisabled}
+          onClick={() => onToggle(!isOpen)}
         >
           {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </Button>
       </div>
-
+      
       {isOpen && (
-        <ul className="absolute z-10 w-full mt-1 max-h-60 overflow-auto bg-white border border-gray-300 rounded-md shadow-lg">
-          {isLoading ? (
-            <li className="px-4 py-2 text-muted-foreground">Loading...</li>
-          ) : options.length === 0 ? (
-            <li className="px-4 py-2 text-muted-foreground">No options found</li>
-          ) : (
-            options.map((option) => (
-              <li
-                key={option[optionKey] as string}
-                onClick={() => onSelectOption(option)}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              >
-                {(option[optionLabel] as string) || option.id}
-              </li>
-            ))
-          )}
-        </ul>
+        <div className="absolute w-full z-50 mt-1 rounded-md border bg-popover shadow-md">
+          <Command>
+            <CommandInput placeholder="Search..." />
+            <CommandList>
+              <CommandEmpty>No options found.</CommandEmpty>
+              <CommandGroup>
+                {isLoading ? (
+                  <CommandItem disabled>Loading...</CommandItem>
+                ) : (
+                  options.map((option) => (
+                    <CommandItem
+                      key={option[optionKey] as string}
+                      onSelect={() => {
+                        onSelectOption(option)
+                        onToggle(false) // Close dropdown on selection
+                      }}
+                    >
+                      {(option[optionLabel] as string) || option.id}
+                    </CommandItem>
+                  ))
+                )}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </div>
       )}
     </div>
   )
 }
-
-export { InputDropdown }
-

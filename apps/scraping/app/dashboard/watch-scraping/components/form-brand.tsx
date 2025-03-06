@@ -50,7 +50,6 @@ export function FormBrand({
 }) {
   const { toast } = useToast();
   const queryClient = getQueryClient();
-
   const { data: brands } = useSuspenseQuery(brandOptions)
 
   const [showBrandAltNameInput, setShowBrandAltNameInput] = useState(false);
@@ -73,11 +72,9 @@ export function FormBrand({
       queryClient.setQueryData<Brand[]>([QUERY_KEY_GET_BRANDS], (oldData = []) => {
         return [...oldData, newBrand];
       });
-
       setBrandId(newBrand.id);
       setBrandNameInputDisabled(true);
       setDialogOpen(false);
-
       toast({
         title: "Success",
         description: "Brand created successfully",
@@ -131,12 +128,12 @@ export function FormBrand({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
-            <FormItem className="mb-1">
+            <FormItem className="w-full">
               <FormLabel>Brand</FormLabel>
               <FormControl>
                 <InputDropdown<Brand>
@@ -164,9 +161,9 @@ export function FormBrand({
             control={form.control}
             name="altName"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormControl>
-                  <Input placeholder="Alternative name" {...field} className="mt-1" />
+                  <Input placeholder="Alternative name" {...field} />
                 </FormControl>
                 <FormDescription>
                   This input is optional, use comma separated values.
@@ -177,7 +174,7 @@ export function FormBrand({
           />
         )}
         {!brandId && (
-          <div className="flex gap-4 mt-4">
+          <div className="flex gap-4 w-full">
             <Button
               type="button"
               variant="outline"
@@ -203,7 +200,7 @@ export function FormBrand({
         )}
 
         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="space-y-6">
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Create New Brand?</DialogTitle>
               <DialogDescription>
