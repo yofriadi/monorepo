@@ -2,9 +2,6 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   SquareTerminal,
   LayoutDashboard,
 } from "lucide-react"
@@ -21,26 +18,10 @@ import {
 } from "@workspace/ui/components/sidebar"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "Luxehouze",
+      plan: "Web Scraping",
     },
   ],
   navMain: [
@@ -50,18 +31,38 @@ const data = {
       icon: LayoutDashboard,
     },
     {
-      title: "Watch",
+      title: "Price Calculation Settings",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "Lookup Price",
-          url: "/dashboard/lookup-price",
+          title: "Brand",
+          url: "/dashboard/lookup-price/brand",
         },
         {
-          title: "Form",
-          url: "/dashboard/watch-scraping",
+          title: "Reference Number",
+          url: "/dashboard/lookup-price/ref-number",
+        },
+        {
+          title: "Bracelet",
+          url: "/dashboard/lookup-price/bracelet",
+        },
+        {
+          title: "Coefficients",
+          url: "/dashboard/lookup-price/coefficients",
+        },
+        {
+          title: "SWU Type",
+          url: "/dashboard/lookup-price/swu-type",
+        },
+        {
+          title: "Dial",
+          url: "/dashboard/lookup-price/dial",
+        },
+        {
+          title: "Condition",
+          url: "/dashboard/lookup-price/condition",
         },
         {
           title: "Brand",
