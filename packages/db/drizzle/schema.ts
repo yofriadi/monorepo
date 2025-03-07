@@ -118,8 +118,8 @@ export const brandsInWatchScraping = watchScraping.table("brands", {
 export const lookupPrices = pgTable("lookup_prices", {
 	id: text('id').default(sql`typeid_generate_text('lookupprice'::text)`).primaryKey().notNull(),
 	type: varchar({ length: 16 }).notNull(),
-	parameter: varchar({ length: 50 }),
-	value: numeric({ precision: 12, scale:  6 }).notNull(),
+	parameter: varchar({ length: 50 }).notNull(),
+	value: numeric({ precision: 12, scale:  6 }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [

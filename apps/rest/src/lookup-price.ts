@@ -53,7 +53,7 @@ class LookupPrice {
     return data[0]
   }
 
-  async update(id: string, payload: { parameter: string; value: number }) {
+  async update(id: string, payload: { parameter?: string; value: number }) {
     const data = await this.db
       .update(lookupPrices)
       .set(payload)
@@ -102,9 +102,9 @@ export const lookupPrice = new Elysia()
         coefficient: 'coefficient',
         dial: 'dial',
         bracelet: 'bracelet',
-        'swu type': 'swu type',
+        swu: 'swu',
         condition: 'condition',
-        'reference number': 'reference number'
+        product: 'product'
       })
     }),
     detail: {
@@ -134,9 +134,9 @@ export const lookupPrice = new Elysia()
         coefficient: 'coefficient',
         dial: 'dial',
         bracelet: 'bracelet',
-        'swu type': 'swu type',
+        swu: 'swu',
         condition: 'condition',
-        'reference number': 'reference number'
+        product: 'product'
       }),
       parameter: t.String(),
       value: t.Number(),
@@ -157,6 +157,24 @@ export const lookupPrice = new Elysia()
     }),
     body: t.Object({
       parameter: t.String(),
+      value: t.Number(),
+    }),
+    detail: {
+      tags: ['Lookup Price']
+    }
+  })
+  .patch('/lookup-price/:id', async ({ lookupPrice, params: { id }, body, error }) => {
+    try {
+      return await lookupPrice.update(id, body)
+    } catch {
+      return error(404, 'Source not found')
+    }
+  },
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    body: t.Object({
       value: t.Number(),
     }),
     detail: {

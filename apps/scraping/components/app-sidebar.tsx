@@ -3,14 +3,8 @@
 import * as React from "react"
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   Command,
-  Frame,
   GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
   SquareTerminal,
   LayoutDashboard,
 } from "lucide-react"
@@ -68,6 +62,14 @@ const data = {
         {
           title: "Form",
           url: "/dashboard/watch-scraping",
+        },
+        {
+          title: "Brand",
+          url: "/dashboard/lookup-price/brand",
+        },
+        {
+          title: "Reference Number",
+          url: "/dashboard/lookup-price/product",
         },
       ],
     },

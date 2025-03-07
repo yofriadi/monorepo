@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 export default function Overview() {
   return (
-    <div className="text-xl flex flex-col my-5 mx-5">
+    <div className="text-xl flex flex-col m-8">
       <Suspense fallback={<div>Loading...</div>}>
         <DataTable columns={columns as any} />
       </Suspense>

@@ -2,7 +2,7 @@
 
 CREATE TABLE lookup_prices (
     "id" TEXT NOT NULL DEFAULT typeid_generate_text('lookupprice') CHECK (typeid_check_text(id, 'lookupprice')),
-    "type" VARCHAR(16) CHECK (type IN ('brand', 'coefficient', 'dial', 'bracelet', 'swu type', 'condition', 'reference number')) NOT NULL,
+    "type" VARCHAR(16) CHECK (type IN ('brand', 'coefficient', 'dial', 'bracelet', 'swu', 'condition', 'product')) NOT NULL,
     "parameter" VARCHAR(50),
     "value" DECIMAL(12, 6) NOT NULL,
     "created_at" timestamptz NOT NULL default now(),
