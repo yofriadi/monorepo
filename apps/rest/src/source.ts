@@ -1,7 +1,15 @@
 import { Elysia, t } from 'elysia'
 import { eq, sql, inArray } from 'drizzle-orm'
 import { db } from "@workspace/db";
-import { sourcesInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, messageQueues } from "@workspace/db/drizzle/schema";0
+import {
+  brandsInWatchScraping,
+  modelsInWatchScraping,
+  sourcesInWatchScraping,
+  productsInWatchScraping,
+  snapshotsInWatchScraping,
+  lookupPrices,
+  messageQueues
+} from "@workspace/db/drizzle/schema";0
 
 class Source {
   constructor(public db) {}
@@ -28,15 +36,20 @@ class Source {
   }
 
   async create(data: { productId: string; url: string }) {
-    const createdSource = await this.db.transaction(async (tx: typeof db) => {
-      const products = await tx
-        .select()
-        .from(productsInWatchScraping)
-        .where(eq(productsInWatchScraping.id, data.productId));
-      if (products.length === 0) {
-        throw new Error(`Product with id ${data.productId} does not exist`);
-      }
+    const result = await this.db.select({
+      brandName: brandsInWatchScraping.name,
+      productName: productsInWatchScraping.referenceNumber,
+    })
+      .from(productsInWatchScraping)
+      .leftJoin(modelsInWatchScraping, eq(productsInWatchScraping.modelId, modelsInWatchScraping.id))
+      .leftJoin(brandsInWatchScraping, eq(modelsInWatchScraping.brandId, brandsInWatchScraping.id))
+      .where(eq(productsInWatchScraping.id, data.productId))
 
+    if (result.length === 0) {
+      throw new Error(`Product with id ${data.productId} does not exist`);
+    }
+
+    const createdSource = await this.db.transaction(async (tx: typeof db) => {
       const [createdSource] = await tx
         .insert(sourcesInWatchScraping)
         .values({
@@ -52,6 +65,14 @@ class Source {
           url: data.url,
         })
         .returning();
+
+      await tx.insert(lookupPrices).values([{
+        type: "brand",
+        parameter: result[0].brandName,
+      }, {
+        type: "reference number",
+        parameter: result[0].productName,
+      }])
 
       const [message] = await tx
         .insert(messageQueues)
