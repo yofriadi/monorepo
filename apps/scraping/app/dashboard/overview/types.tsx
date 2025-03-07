@@ -1,3 +1,9 @@
+export enum TurnoverCategory {
+  FAST = 'fast',
+  MODERATE = 'moderate',
+  SLOW = 'slow'
+}
+
 export type Brand = {
   id: string;
   name: string;
@@ -15,6 +21,7 @@ export type Product = {
   id: string;
   modelId: string;
   referenceNumber: string;
+  turnoverCategory: TurnoverCategory | null;
 }
 
 export type Source = {
@@ -54,6 +61,7 @@ export type Snapshot = {
   modelName: string;
   brandId: string;
   brandName: string;
+  turnoverCategory: TurnoverCategory | null;
 }
 
 export type DisplayProduct = {
@@ -64,5 +72,5 @@ export type DisplayProduct = {
   referenceNumber: string;
   modelName: string;
   platform: string;
-  turnoverCategory?: string | null;
+  turnoverCategory: TurnoverCategory | null;
 };

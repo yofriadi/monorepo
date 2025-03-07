@@ -14,9 +14,14 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
-import { DisplayProduct } from "./types"
+import { DisplayProduct, TurnoverCategory } from "./types"
 
-export const columns = (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void): ColumnDef<DisplayProduct>[] => [
+const capitalizeFirstLetter = (str: string | null | undefined): string => {
+  if (!str) return "Not Set";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+export const columns = (updateTurnoverCategory: (productId: string, newTurnover: TurnoverCategory | null) => void): ColumnDef<DisplayProduct>[] => [
   {
     id: "brandName",
     header: "Brand Name",
@@ -43,7 +48,7 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
   {
     id: "turnoverCategory",
     header: "Turnover Category",
-    accessorFn: (row: DisplayProduct) => row.turnoverCategory || "Not Set",
+    accessorFn: (row: DisplayProduct) => capitalizeFirstLetter(row.turnoverCategory),
   },
   {
     id: "actions",
@@ -51,10 +56,10 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     cell: ({ row }) => {
       const router = useRouter();
       const [isEditOpen, setIsEditOpen] = useState(false);
-      const [selectedTurnover, setSelectedTurnover] = useState(row.original.turnoverCategory || "");
+      const [selectedTurnover, setSelectedTurnover] = useState<string>(row.original.turnoverCategory || "");
 
       const handleSaveTurnover = () => {
-        const newTurnover = selectedTurnover === "" ? null : selectedTurnover;
+        const newTurnover = selectedTurnover === "" ? null : selectedTurnover as TurnoverCategory;
         updateTurnoverCategory(row.original.productId!, newTurnover);
         setIsEditOpen(false);
       };
@@ -95,9 +100,9 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="slow">Slow</SelectItem>
-                      <SelectItem value="middle">Middle</SelectItem>
-                      <SelectItem value="fast">Fast</SelectItem>
+                      <SelectItem value={TurnoverCategory.SLOW}>Slow</SelectItem>
+                      <SelectItem value={TurnoverCategory.MODERATE}>Moderate</SelectItem>
+                      <SelectItem value={TurnoverCategory.FAST}>Fast</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -115,4 +120,3 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     },
   },
 ];
-

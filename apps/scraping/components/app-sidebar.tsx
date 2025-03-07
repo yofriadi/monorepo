@@ -64,6 +64,14 @@ const data = {
           title: "Condition",
           url: "/dashboard/lookup-price/condition",
         },
+        {
+          title: "Brand",
+          url: "/dashboard/lookup-price/brand",
+        },
+        {
+          title: "Reference Number",
+          url: "/dashboard/lookup-price/product",
+        },
       ],
     },
   ],
