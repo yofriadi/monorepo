@@ -17,6 +17,7 @@ class Snapshot {
       platform: sourcesInWatchScraping.platform,
       productId: productsInWatchScraping.id,
       referenceNumber: productsInWatchScraping.referenceNumber,
+      turnoverCategory: productsInWatchScraping.turnoverCategory,
       modelId: modelsInWatchScraping.id,
       modelName: modelsInWatchScraping.name,
       brandId: brandsInWatchScraping.id,

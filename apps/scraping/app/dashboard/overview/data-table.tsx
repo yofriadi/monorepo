@@ -9,14 +9,14 @@ import {
   type ColumnFiltersState,
 } from "@tanstack/react-table"
 import { useSuspenseQuery, useSuspenseQueries } from '@tanstack/react-query'
-
 import { brandOptions } from "./query/brands"
 import { snapshotOptions } from "./query/snapshots"
 import { createModelsQueryOptions } from "./query/models"
 import { createProductsQueryOptions } from "./query/products"
 import { createSourcesQueryOptions } from "./query/sources"
 import { createFilteredSnapshotsQueryOptions } from "./query/filtered-snapshots"
-import { Brand, Model, Product, Snapshot, DisplayProduct, Source } from "./types"
+import { useUpdateTurnoverCategory } from "./query/update-turnover" // Impor mutasi
+import { Brand, Model, Product, Snapshot, DisplayProduct, Source, TurnoverCategory } from "./types"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
@@ -24,7 +24,7 @@ import { useToast } from "@workspace/ui/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
 interface DataTableProps<TData> {
-  columns: (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void) => ColumnDef<TData, any>[]
+  columns: (updateTurnoverCategory: (productId: string, newTurnover: TurnoverCategory | null) => void) => ColumnDef<TData, any>[]
 }
 
 export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
@@ -38,6 +38,8 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const { data: brandsData = [] } = useSuspenseQuery(brandOptions)
   const { data: initialSnapshotsData = [] } = useSuspenseQuery(snapshotOptions)
+
+  const { mutate: updateTurnoverCategory } = useUpdateTurnoverCategory();
 
   const brandFilter = columnFilters.find(filter => filter.id === "brandFilter")
   const brandIds = brandFilter ? (brandFilter.value as string[]) : [];
@@ -97,22 +99,8 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
       referenceNumber: snapshot.referenceNumber,
       modelName: snapshot.modelName,
       platform: snapshot.platform,
-      turnoverCategory: null,
+      turnoverCategory: snapshot.turnoverCategory,
     }));
-  };
-
-  // Fungsi untuk memperbarui turnover category secara lokal
-  const updateTurnoverCategory = (productId: string, newTurnover: string | null) => {
-    setDisplayData(prevData =>
-      prevData.map(item =>
-        item.productId === productId ? { ...item, turnoverCategory: newTurnover } : item
-      )
-    );
-    toast({
-      title: "Turnover Category Updated",
-      description: `Turnover category for product ${productId} set to ${newTurnover || "Not Set"}`,
-      duration: 2000,
-    });
   };
 
   const applyFilters = () => {
@@ -167,7 +155,7 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const table = useReactTable({
     data: displayData as TData[],
-    columns: columns(updateTurnoverCategory), // Kirim fungsi ke columns
+    columns: columns((productId, newTurnover) => updateTurnoverCategory({ productId, newTurnover })),
     getCoreRowModel: getCoreRowModel(),
   })
 
