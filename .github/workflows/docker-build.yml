@@ -1,4 +1,4 @@
-name: Build Docker Images
+name: Deployment
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - 'apps/rest/**'
-      - 'apps/worker/**'
       - 'apps/scraping/**'
       - '.github/workflows/docker-build.yml'
 
@@ -15,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rest: ${{ steps.changes.outputs.rest }}
-      worker: ${{ steps.changes.outputs.worker }}
+      trigger: ${{ steps.changes.outputs.trigger }}
       scraping: ${{ steps.changes.outputs.scraping }}
     steps:
       - uses: actions/checkout@v4
@@ -25,12 +24,15 @@ jobs:
           filters: |
             rest:
               - 'apps/rest/**'
-            worker:
-              - 'apps/worker/**'
+              - '!apps/rest/trigger/**'
+              - '!apps/rest/script/**'
+            trigger:
+              - 'apps/rest/trigger/**'
+              - 'apps/rest/script/**'
             scraping:
               - 'apps/scraping/**'
 
-  build-rest:
+  deploy-rest:
     needs: detect-changes
     if: needs.detect-changes.outputs.rest == 'true'
     runs-on: ubuntu-latest
@@ -58,13 +60,21 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/rest:buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/rest:buildcache,mode=max
 
-  build-worker:
+  deploy-trigger:
     needs: detect-changes
-    if: needs.detect-changes.outputs.worker == 'true'
+    if: needs.detect-changes.outputs.trigger == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -76,17 +86,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Worker
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./apps/worker/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/worker:${{ github.sha }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/worker:buildcache,mode=max
+      - name: 🚀 Deploy Trigger.dev
+        env:
+          TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+          TRIGGER_API_URL: ${{ secrets.TRIGGER_API_URL }}
+        run: |
+          npx trigger.dev@latest deploy --self-hosted --push
 
-  build-scraping:
+  deploy-scraping:
     needs: detect-changes
     if: needs.detect-changes.outputs.scraping == 'true'
     runs-on: ubuntu-latest

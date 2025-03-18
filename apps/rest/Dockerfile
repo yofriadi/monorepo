@@ -8,12 +8,20 @@ RUN apk update && \
     npm install -g pnpm@latest
 
 # Copy monorepo configuration files and lockfile
-COPY pnpm-workspace.yaml .
-COPY package.json .
-COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
-# Copy the relevant Turborepo packages
-COPY apps/rest ./apps/rest
+# Copy the relevant Turborepo packages in a single layer
+COPY apps/rest/package.json \
+     apps/rest/tsconfig.json \
+     ./apps/rest/
+
+COPY apps/rest/src/index.ts \
+     apps/rest/src/types.ts \
+     apps/rest/src/constant.ts \
+     ./apps/rest/src/
+
+COPY apps/rest/src/api ./apps/rest/src/api
+
 COPY packages/db ./packages/db
 
 # Install all monorepo dependencies using pnpm

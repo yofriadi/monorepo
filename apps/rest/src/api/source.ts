@@ -1,7 +1,15 @@
 import { Elysia, t } from 'elysia'
-import { eq, sql, inArray } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { db } from "@workspace/db";
-import { sourcesInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, messageQueue } from "@workspace/db/drizzle/schema";0
+import {
+  brandsInWatchScraping,
+  modelsInWatchScraping,
+  sourcesInWatchScraping,
+  productsInWatchScraping,
+  snapshotsInWatchScraping,
+} from "@workspace/db/drizzle/schema";0
+import { tasks } from "@trigger.dev/sdk/v3";
+import { TASK_PRODUCT_LISTING_EXTRACTION } from "../constant";
 
 class Source {
   constructor(public db) {}
@@ -28,15 +36,20 @@ class Source {
   }
 
   async create(data: { productId: string; url: string }) {
-    const createdSource = await this.db.transaction(async (tx: typeof db) => {
-      const products = await tx
-        .select()
-        .from(productsInWatchScraping)
-        .where(eq(productsInWatchScraping.id, data.productId));
-      if (products.length === 0) {
-        throw new Error(`Product with id ${data.productId} does not exist`);
-      }
+    const result = await this.db.select({
+      brandName: brandsInWatchScraping.name,
+      productName: productsInWatchScraping.referenceNumber,
+    })
+      .from(productsInWatchScraping)
+      .leftJoin(modelsInWatchScraping, eq(productsInWatchScraping.modelId, modelsInWatchScraping.id))
+      .leftJoin(brandsInWatchScraping, eq(modelsInWatchScraping.brandId, brandsInWatchScraping.id))
+      .where(eq(productsInWatchScraping.id, data.productId))
 
+    if (result.length === 0) {
+      throw new Error(`Product with id ${data.productId} does not exist`);
+    }
+
+    const createdSource = await this.db.transaction(async (tx: typeof db) => {
       const [createdSource] = await tx
         .insert(sourcesInWatchScraping)
         .values({
@@ -45,25 +58,16 @@ class Source {
         })
         .returning();
 
+      const payload = {
+        sourceId: createdSource.id,
+        url: data.url,
+      }
       const [createdSnapshot] = await tx
         .insert(snapshotsInWatchScraping)
-        .values({
-          sourceId: createdSource.id,
-          url: data.url,
-        })
+        .values(payload)
         .returning();
 
-      const [message] = await tx
-        .insert(messageQueue)
-        .values({
-          topic: "scraping",
-          payload: JSON.stringify({ snapshotId: createdSnapshot.id }),
-        })
-        .returning();
-
-      await tx.execute(
-        sql.raw(`NOTIFY message_events, 'scraping:${message.id}'`),
-      );
+      await tasks.trigger(TASK_PRODUCT_LISTING_EXTRACTION, createdSnapshot);
 
       return createdSource;
     });
@@ -129,7 +133,8 @@ export const source = new Elysia()
   .post('/source', async ({ source, body, error }) => {
     try {
       return await source.create(body)
-    } catch {
+    } catch (err) {
+      console.error(err);
       return error(422, 'Unable to create source')
     }
   },

@@ -9,14 +9,18 @@
   "dependencies": {
     "@dotenvx/dotenvx": "^1.36.0",
     "@elysiajs/swagger": "^1.2.0",
+    "@mendable/firecrawl-js": "^1.17.0",
+    "@trigger.dev/sdk": "^3.3.17",
     "@workspace/db": "workspace:*",
     "change-case": "^5.4.4",
+    "cheerio": "^1.0.0",
     "drizzle-orm": "^0.39.3",
     "drizzle-typebox": "^0.3.0",
     "elysia": "latest",
     "pg": "^8.13.3"
   },
   "devDependencies": {
+    "@trigger.dev/build": "^3.3.17",
     "@types/pg": "^8.11.11",
     "bun-types": "latest",
     "drizzle-kit": "^0.30.4",

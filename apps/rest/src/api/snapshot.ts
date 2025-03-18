@@ -1,41 +1,57 @@
 import { Elysia, t } from 'elysia'
-import { desc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from "@workspace/db";
-import { brandsInWatchScraping, modelsInWatchScraping, productsInWatchScraping, snapshotsInWatchScraping, sourcesInWatchScraping } from "@workspace/db/drizzle/schema";
+import { snapshotsInWatchScraping } from "@workspace/db/drizzle/schema";
+import { TurnoverCategory, SnapshotTimeRange, DataSource } from "../types";
 
 class Snapshot {
   constructor(public db) {}
 
-  async getAll(sourceIds?: string) {
-    let query = this.db.select({
-      snapshotId: snapshotsInWatchScraping.id,
-      url: snapshotsInWatchScraping.url,
-      createdAt: snapshotsInWatchScraping.createdAt,
-      updatedAt: snapshotsInWatchScraping.updatedAt,
-      extractedData: snapshotsInWatchScraping.extractedData,
-      sourceId: sourcesInWatchScraping.id,
-      platform: sourcesInWatchScraping.platform,
-      productId: productsInWatchScraping.id,
-      referenceNumber: productsInWatchScraping.referenceNumber,
-      modelId: modelsInWatchScraping.id,
-      modelName: modelsInWatchScraping.name,
-      brandId: brandsInWatchScraping.id,
-      brandName: brandsInWatchScraping.name,
-    })
-      .from(snapshotsInWatchScraping)
-      .leftJoin(sourcesInWatchScraping, eq(snapshotsInWatchScraping.sourceId, sourcesInWatchScraping.id))
-      .leftJoin(productsInWatchScraping, eq(sourcesInWatchScraping.productId, productsInWatchScraping.id))
-      .leftJoin(modelsInWatchScraping, eq(productsInWatchScraping.modelId, modelsInWatchScraping.id))
-      .leftJoin(brandsInWatchScraping, eq(modelsInWatchScraping.brandId, brandsInWatchScraping.id))
-      .where(isNotNull(snapshotsInWatchScraping.sourceId));
+  async getAll({
+    brandFilter,
+    modelFilter,
+    referenceFilter,
+    yearFilter,
+    conditionFilter,
+    locationFilter,
+    dataSourceFilter,
+    timeRange,
+    hasBox,
+    hasPapers,
+    turnover,
+  }: {
+    brandFilter?: string,
+    modelFilter?: string,
+    referenceFilter?: string,
+    yearFilter?: string,
+    conditionFilter?: string,
+    locationFilter?: string,
+    dataSourceFilter?: DataSource,
+    timeRange?: SnapshotTimeRange,
+    hasBox?: boolean,
+    hasPapers?: boolean,
+    turnover?: TurnoverCategory,
+  }) {
+    const paramObj: Record<string, any> = {};
+    if (brandFilter) paramObj.brand_filter = brandFilter;
+    if (modelFilter) paramObj.model_filter = modelFilter;
+    if (referenceFilter) paramObj.reference_filter = referenceFilter;
+    if (yearFilter) paramObj.year_filter = yearFilter;
+    if (conditionFilter) paramObj.condition_filter = conditionFilter;
+    if (locationFilter) paramObj.location_filter = locationFilter;
+    if (dataSourceFilter) paramObj.data_source_filter = dataSourceFilter;
+    if (timeRange) paramObj.p_time_range = timeRange;
+    if (hasBox) paramObj.has_box_filter = hasBox;
+    if (hasPapers) paramObj.has_papers_filter = hasPapers;
+    if (turnover) paramObj.turnover_filter = turnover;
 
-    if (sourceIds && sourceIds.length > 0) {
-      const sourceIdsArray = sourceIds.split(',');
-      query = query.where(inArray(snapshotsInWatchScraping.sourceId, sourceIdsArray));
-    }
-
-    const result = await query.orderBy(desc(snapshotsInWatchScraping.createdAt));
-    return result;
+    const paramNames = Object.keys(paramObj);
+    const sqlParams = paramNames.map(name => `${name} := $${name}`).join(', ');
+    const result = await this.db.execute(
+      `SELECT * FROM watch_scraping.get_watch_prices(${sqlParams})`,
+      paramObj
+    );
+    return result.rows;
   }
 
   async getById(id: string) {
@@ -78,12 +94,22 @@ class Snapshot {
 
 export const snapshot = new Elysia()
   .decorate('snapshot', new Snapshot(db))
-  .get('/snapshots', async ({ snapshot, query: { sourceIds } }) => {
-    return await snapshot.getAll(sourceIds)
+  .get('/snapshots', async ({ snapshot, query }) => {
+    return await snapshot.getAll(query);
   },
   {
     query: t.Object({
-      sourceIds: t.Optional(t.String()),
+      brand: t.Optional(t.String()),
+      model: t.Optional(t.String()),
+      reference: t.Optional(t.String()),
+      year: t.Optional(t.String()),
+      condition: t.Optional(t.String()),
+      location: t.Optional(t.String()),
+      dataSource: t.Optional(t.Enum(DataSource)),
+      timeRange: t.Optional(t.Enum(SnapshotTimeRange)),
+      hasBox: t.Optional(t.Boolean()),
+      hasPapers: t.Optional(t.Boolean()),
+      turnover: t.Optional(t.Enum(TurnoverCategory)),
     }),
     detail: {
       tags: ['Snapshot']

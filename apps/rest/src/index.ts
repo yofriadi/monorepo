@@ -1,12 +1,11 @@
 import { Elysia } from "elysia";
 import { swagger } from '@elysiajs/swagger'
-import { health } from './health';
-import { brand } from "./brand";
-import { model } from "./model";
-import { product } from "./product";
-import { source } from "./source";
-import { snapshot } from "./snapshot";
-import { lookupPrice } from "./lookup-price";
+import { health } from './api/health';
+import { brand } from "./api/brand";
+import { model } from "./api/model";
+import { product } from "./api/product";
+import { source } from "./api/source";
+import { snapshot } from "./api/snapshot";
 
 const app = new Elysia()
   .use(swagger({
@@ -22,7 +21,6 @@ const app = new Elysia()
           { name: 'Product', description: 'Product endpoints' },
           { name: 'Source', description: 'Source endpoints' },
           { name: 'Snapshot', description: 'Snapshot endpoints' },
-          { name: 'Lookup Price', description: 'Lookup Price endpoints' },
       ]
     },
   }))
@@ -37,7 +35,6 @@ const app = new Elysia()
     .use(product)
     .use(source)
     .use(snapshot)
-    .use(lookupPrice)
   ).listen(3001);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
