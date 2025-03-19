@@ -52,18 +52,17 @@ RUN pnpm install --frozen-lockfile
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-ARG NEXT_PUBLIC_API_URL
-ARG NEXT_PUBLIC_STACK_PROJECT_ID
-ARG NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY
-ARG STACK_SECRET_SERVER_KEY
-
-# Set environment variables for the build step using the ARG values
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
-    NEXT_PUBLIC_STACK_PROJECT_ID=${NEXT_PUBLIC_STACK_PROJECT_ID} \
-    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=${NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY} \
-    STACK_SECRET_SERVER_KEY=${STACK_SECRET_SERVER_KEY}
-
-RUN pnpm run build
+# Build the Next.js app in apps/scraping
+RUN --mount=type=secret,id=NEXT_PUBLIC_API_URL \
+    --mount=type=secret,id=NEXT_PUBLIC_STACK_PROJECT_ID \
+    --mount=type=secret,id=NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY \
+    --mount=type=secret,id=STACK_SECRET_SERVER_KEY \
+    cd apps/scraping && \
+    export NEXT_PUBLIC_API_URL=$(cat /run/secrets/NEXT_PUBLIC_API_URL) && \
+    export NEXT_PUBLIC_STACK_PROJECT_ID=$(cat /run/secrets/NEXT_PUBLIC_STACK_PROJECT_ID) && \
+    export NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=$(cat /run/secrets/NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) && \
+    export STACK_SECRET_SERVER_KEY=$(cat /run/secrets/STACK_SECRET_SERVER_KEY) && \
+    pnpm run build
 
 # ---- Runner Stage: Create the minimal production image ----
 FROM oven/bun:alpine AS runner
