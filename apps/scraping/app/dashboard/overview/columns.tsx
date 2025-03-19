@@ -14,19 +14,14 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
-import { DisplayProduct } from "./types"
+import { DisplayProduct, TurnoverCategory } from "./types"
 
-export const columns = (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void): ColumnDef<DisplayProduct>[] => [
+
+export const columns = (updateTurnoverCategory: (productId: string, newTurnover: TurnoverCategory | null) => void): ColumnDef<DisplayProduct>[] => [
   {
     id: "brandName",
     header: "Brand Name",
     accessorFn: (row: DisplayProduct) => row.brandName,
-    filterFn: "arrIncludesSome",
-  },
-  {
-    id: "model",
-    header: "Model",
-    accessorFn: (row: DisplayProduct) => row.referenceNumber,
     filterFn: "arrIncludesSome",
   },
   {
@@ -36,14 +31,61 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     filterFn: "arrIncludesSome",
   },
   {
-    id: "platform",
-    header: "Platform",
-    accessorFn: (row: DisplayProduct) => row.platform,
+    id: "referenceNumber",
+    header: "Reference Number",
+    accessorFn: (row: DisplayProduct) => row.referenceNumber,
+    filterFn: "arrIncludesSome",
   },
   {
     id: "turnoverCategory",
     header: "Turnover Category",
-    accessorFn: (row: DisplayProduct) => row.turnoverCategory || "Not Set",
+    accessorFn: (row: DisplayProduct) => {
+      if (!row.turnoverCategory) return "Not Set";
+      return row.turnoverCategory.charAt(0).toUpperCase() + row.turnoverCategory.slice(1);
+    },
+    filterFn: "equalsString",
+  },
+  {
+    id: "lastScrapedDate",
+    header: "Last Scraped Date",
+    accessorFn: (row: DisplayProduct) => row.updatedAt || row.createdAt,
+    cell: ({ row }) => {
+      const date = row.original.updatedAt || row.original.createdAt;
+      return date ? new Date(date).toLocaleDateString() : '';
+    },
+    filterFn: "inNumberRange",
+  },
+  {
+    // This column will be hidden by default but accessible for other columns
+    accessorKey: "currency",
+    header: "Currency",
+  },
+  {
+    accessorKey: "avgPrice",
+    header: "Avg Price",
+    cell: ({ row }) => {
+      const currency = row.getValue("currency") as string || "";
+      const price = row.getValue("avgPrice") as string;
+      return `${currency}${parseFloat(price).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+    },
+  },
+  {
+    accessorKey: "minPrice",
+    header: "Min Price",
+    cell: ({ row }) => {
+      const price = row.getValue("minPrice") as string;
+      const currency = row.getValue("currency") as string || "";
+      return price ? `${currency}${parseFloat(price).toLocaleString()}` : "-";
+    },
+  },
+  {
+    accessorKey: "maxPrice",
+    header: "Max Price",
+    cell: ({ row }) => {
+      const price = row.getValue("maxPrice") as string;
+      const currency = row.getValue("currency") as string || "";
+      return price ? `${currency}${parseFloat(price).toLocaleString()}` : "-";
+    },
   },
   {
     id: "actions",
@@ -51,10 +93,10 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     cell: ({ row }) => {
       const router = useRouter();
       const [isEditOpen, setIsEditOpen] = useState(false);
-      const [selectedTurnover, setSelectedTurnover] = useState(row.original.turnoverCategory || "");
+      const [selectedTurnover, setSelectedTurnover] = useState<string>(row.original.turnoverCategory || "");
 
       const handleSaveTurnover = () => {
-        const newTurnover = selectedTurnover === "" ? null : selectedTurnover;
+        const newTurnover = selectedTurnover === "" ? null : selectedTurnover as TurnoverCategory;
         updateTurnoverCategory(row.original.productId!, newTurnover);
         setIsEditOpen(false);
       };
@@ -95,9 +137,9 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="slow">Slow</SelectItem>
-                      <SelectItem value="middle">Middle</SelectItem>
-                      <SelectItem value="fast">Fast</SelectItem>
+                    <SelectItem value={TurnoverCategory.SLOW}>Slow</SelectItem>
+                      <SelectItem value={TurnoverCategory.MODERATE}>Moderate</SelectItem>
+                      <SelectItem value={TurnoverCategory.FAST}>Fast</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -115,4 +157,3 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
     },
   },
 ];
-

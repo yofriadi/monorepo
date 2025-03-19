@@ -48,7 +48,7 @@ class Snapshot {
     const paramNames = Object.keys(paramObj);
     const sqlParams = paramNames.map(name => `${name} := $${name}`).join(', ');
     const result = await this.db.execute(
-      `SELECT * FROM watch_scraping.get_watch_prices(${sqlParams})`,
+      `SELECT * FROM watch_scraping.get_snapshot_analytic(${sqlParams})`,
       paramObj
     );
     return result.rows;

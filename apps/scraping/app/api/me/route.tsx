@@ -7,10 +7,28 @@ export async function GET() {
     const authToken = (await cookieStore).get('auth_token');
 
     if (!authToken) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
+      
+      response.cookies.set('auth_token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 0,
+        path: '/'
+      });
+      
+      response.cookies.set('refresh_token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 0,
+        path: '/'
+      });
+      
+      return response;
     }
 
     const apiUrl = process.env.NEXT_PUBLIC_STACK_API_URL;
@@ -32,19 +50,56 @@ export async function GET() {
 
     if (!response.ok) {
       const error = await response.json();
-      return NextResponse.json(
+      const errorResponse = NextResponse.json(
         { error: error?.message || "Failed to fetch user data" },
         { status: response.status }
       );
+      
+      if (response.status === 401) {
+        errorResponse.cookies.set('auth_token', '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 0,
+          path: '/'
+        });
+        
+        errorResponse.cookies.set('refresh_token', '', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 0,
+          path: '/'
+        });
+      }
+      
+      return errorResponse;
     }
 
     const userData = await response.json();
     return NextResponse.json(userData);
   } catch (error) {
-    console.error('Error fetching user data:', error);
-    return NextResponse.json(
+    const errorResponse = NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }
     );
+    
+    errorResponse.cookies.set('auth_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 0,
+      path: '/'
+    });
+    
+    errorResponse.cookies.set('refresh_token', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 0,
+      path: '/'
+    });
+    
+    return errorResponse;
   }
 }

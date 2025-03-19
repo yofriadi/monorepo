@@ -6,6 +6,7 @@ import QueryProvider from "@/lib/providers/query";
 import { Toaster } from "@workspace/ui/components/toaster"
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "../stack";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const fontSans = Geist({
   subsets: ["latin"],
@@ -28,10 +29,12 @@ export default function RootLayout({
         <StackProvider app={stackServerApp}>
           <StackTheme>
             <QueryProvider>
-              <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                {children}
-                <Toaster />
-              </ThemeProvider>
+              <NuqsAdapter>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                  {children}
+                  <Toaster />
+                </ThemeProvider>
+              </NuqsAdapter>
             </QueryProvider>
           </StackTheme>
         </StackProvider>

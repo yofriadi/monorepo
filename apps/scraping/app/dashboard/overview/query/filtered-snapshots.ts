@@ -1,11 +1,20 @@
 import { queryOptions } from '@tanstack/react-query'
 import { Snapshot } from '../types'
 
-export const createFilteredSnapshotsQueryOptions = (sourceIds?: string[]) => {
+export const createFilteredSnapshotsQueryOptions = (
+  sourceIds?: string[],
+  brandIds?: string[],
+  modelIds?: string[],
+  productIds?: string[]
+) => {
   return queryOptions({
-    queryKey: ['filteredSnapshots', { sourceIds }],
+    queryKey: ['filteredSnapshots', { sourceIds, brandIds, modelIds, productIds }],
     queryFn: async () => {
-      if (!sourceIds || sourceIds.length === 0) {
+      // If no filters are provided, return empty array
+      if ((!sourceIds || sourceIds.length === 0) && 
+          (!brandIds || brandIds.length === 0) && 
+          (!modelIds || modelIds.length === 0) && 
+          (!productIds || productIds.length === 0)) {
         return []
       }
       
@@ -13,7 +22,26 @@ export const createFilteredSnapshotsQueryOptions = (sourceIds?: string[]) => {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/snapshots?sourceIds=${sourceIds.join(',')}`, {
+        // Build query parameters
+        const params = new URLSearchParams()
+        
+        if (sourceIds && sourceIds.length > 0) {
+          params.append('sourceIds', sourceIds.join(','))
+        }
+        
+        if (brandIds && brandIds.length > 0) {
+          params.append('brand', brandIds.join(','))
+        }
+        
+        if (modelIds && modelIds.length > 0) {
+          params.append('model', modelIds.join(','))
+        }
+        
+        if (productIds && productIds.length > 0) {
+          params.append('reference', productIds.join(','))
+        }
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/snapshots?${params.toString()}`, {
           signal: controller.signal,
           // Make sure we're not using cache during build time
           cache: 'no-store',
@@ -33,6 +61,9 @@ export const createFilteredSnapshotsQueryOptions = (sourceIds?: string[]) => {
         return []
       }
     },
-    enabled: !!sourceIds && sourceIds.length > 0
+    enabled: (!!sourceIds && sourceIds.length > 0) || 
+             (!!brandIds && brandIds.length > 0) || 
+             (!!modelIds && modelIds.length > 0) || 
+             (!!productIds && productIds.length > 0)
   })
 }

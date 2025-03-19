@@ -10,9 +10,11 @@ RUN apk update && \
     apk add --no-cache npm && \
     npm install -g pnpm@latest
 
+# Set non-interactive environment to avoid prompts
+ENV CI=true
+
 # Copy package files first to leverage layer caching
-COPY pnpm-lock.yaml ./
-COPY package.json ./
+COPY package.json pnpm-lock.yaml ./
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/scraping/package.json ./apps/scraping/
 
@@ -35,8 +37,12 @@ RUN apk update && \
 
 WORKDIR /app
 
+# Set non-interactive environment to avoid prompts
+ENV CI=true
+
 # Copy all source files
 COPY . .
+
 # Copy pnpm files
 COPY --from=installer /app/pnpm-lock.yaml ./
 COPY --from=installer /app/package.json ./
@@ -46,17 +52,18 @@ RUN pnpm install --frozen-lockfile
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the Next.js app in apps/scraping
-RUN --mount=type=secret,id=NEXT_PUBLIC_API_URL \
-    --mount=type=secret,id=NEXT_PUBLIC_STACK_PROJECT_ID \
-    --mount=type=secret,id=NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY \
-    --mount=type=secret,id=STACK_SECRET_SERVER_KEY \
-    cd apps/scraping && \
-    export NEXT_PUBLIC_API_URL=$(cat /run/secrets/NEXT_PUBLIC_API_URL) && \
-    export NEXT_PUBLIC_STACK_PROJECT_ID=$(cat /run/secrets/NEXT_PUBLIC_STACK_PROJECT_ID) && \
-    export NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=$(cat /run/secrets/NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY) && \
-    export STACK_SECRET_SERVER_KEY=$(cat /run/secrets/STACK_SECRET_SERVER_KEY) && \
-    pnpm run build
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_STACK_PROJECT_ID
+ARG NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY
+ARG STACK_SECRET_SERVER_KEY
+
+# Set environment variables for the build step using the ARG values
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
+    NEXT_PUBLIC_STACK_PROJECT_ID=${NEXT_PUBLIC_STACK_PROJECT_ID} \
+    NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=${NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY} \
+    STACK_SECRET_SERVER_KEY=${STACK_SECRET_SERVER_KEY}
+
+RUN pnpm run build
 
 # ---- Runner Stage: Create the minimal production image ----
 FROM oven/bun:alpine AS runner

@@ -1,19 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-  LayoutDashboard,
-} from "lucide-react"
+import { LayoutDashboard } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -27,26 +15,10 @@ import {
 } from "@workspace/ui/components/sidebar"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "Luxehouze",
+      plan: "Web Scraping",
     },
   ],
   navMain: [
@@ -54,22 +26,6 @@ const data = {
       title: "Dashboard",
       url: "/dashboard/overview",
       icon: LayoutDashboard,
-    },
-    {
-      title: "Watch",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Lookup Price",
-          url: "/dashboard/lookup-price",
-        },
-        {
-          title: "Form",
-          url: "/dashboard/watch-scraping",
-        },
-      ],
     },
   ],
 }

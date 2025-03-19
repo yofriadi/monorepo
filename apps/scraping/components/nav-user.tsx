@@ -5,9 +5,7 @@ import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import {
@@ -47,6 +45,7 @@ export function NavUser() {
     const fetchUserData = async () => {
       try {
         const response = await fetch('/api/me');
+        
         if (!response.ok) {
           if (response.status === 401) {
             router.push('/signin');
@@ -54,6 +53,7 @@ export function NavUser() {
           }
           throw new Error('Failed to fetch user data');
         }
+        
         const data = await response.json();
         setUserData({
           display_name: data.display_name,
@@ -62,6 +62,7 @@ export function NavUser() {
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
+        router.push('/signin');
       } finally {
         setIsLoading(false);
       }
@@ -154,10 +155,6 @@ export function NavUser() {
               <DropdownMenuItem onClick={() => router.push('/dashboard/account/settings')}>
                 <BadgeCheck className="mr-2 size-4" />
                 Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell className="mr-2 size-4" />
-                Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

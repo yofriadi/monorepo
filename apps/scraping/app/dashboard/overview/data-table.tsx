@@ -9,14 +9,14 @@ import {
   type ColumnFiltersState,
 } from "@tanstack/react-table"
 import { useSuspenseQuery, useSuspenseQueries } from '@tanstack/react-query'
-
 import { brandOptions } from "./query/brands"
 import { snapshotOptions } from "./query/snapshots"
 import { createModelsQueryOptions } from "./query/models"
 import { createProductsQueryOptions } from "./query/products"
 import { createSourcesQueryOptions } from "./query/sources"
 import { createFilteredSnapshotsQueryOptions } from "./query/filtered-snapshots"
-import { Brand, Model, Product, Snapshot, DisplayProduct, Source } from "./types"
+import { useUpdateTurnoverCategory } from "./query/update-turnover"
+import { Brand, Model, Product, Snapshot, DisplayProduct, Source, TurnoverCategory, WatchPriceData } from "./types"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
@@ -24,7 +24,7 @@ import { useToast } from "@workspace/ui/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
 interface DataTableProps<TData> {
-  columns: (updateTurnoverCategory: (productId: string, newTurnover: string | null) => void) => ColumnDef<TData, any>[]
+  columns: (updateTurnoverCategory: (productId: string, newTurnover: TurnoverCategory | null) => void) => ColumnDef<TData, any>[]
 }
 
 export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
@@ -38,6 +38,8 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const { data: brandsData = [] } = useSuspenseQuery(brandOptions)
   const { data: initialSnapshotsData = [] } = useSuspenseQuery(snapshotOptions)
+
+  const { mutate: updateTurnoverCategory } = useUpdateTurnoverCategory();
 
   const brandFilter = columnFilters.find(filter => filter.id === "brandFilter")
   const brandIds = brandFilter ? (brandFilter.value as string[]) : [];
@@ -62,7 +64,12 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
       createSourcesQueryOptions(isFiltering ? (productIds.length > 0 ? productIds : productData.filter(p =>
         !modelIds.length || modelIds.includes(p.modelId)
       ).map(p => p.id)) : undefined),
-      createFilteredSnapshotsQueryOptions(filteredSourceIds)
+      createFilteredSnapshotsQueryOptions(
+        filteredSourceIds,
+        brandIds.length > 0 ? brandIds : undefined,
+        modelIds.length > 0 ? modelIds : undefined,
+        productIds.length > 0 ? productIds : undefined
+      )
     ]
   })
 
@@ -75,10 +82,15 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   useEffect(() => {
     if (isFiltering) {
-      setFilteredSourceIds(sourcesData.map((source: Source) => source.id));
+      // Only set source IDs if we're not using direct filtering
+      if (!brandIds.length && !modelIds.length && !productIds.length) {
+        setFilteredSourceIds(sourcesData.map((source: Source) => source.id));
+      } else {
+        setFilteredSourceIds(undefined);
+      }
       setIsQueryLoading(false);
     }
-  }, [sourcesData, isFiltering]);
+  }, [sourcesData, isFiltering, brandIds, modelIds, productIds]);
 
   useEffect(() => {
     if (isFiltering && filteredSnapshotsData !== undefined) {
@@ -88,31 +100,19 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
     }
   }, [filteredSnapshotsData, isFiltering]);
 
-  const processSnapshotsToDisplayProducts = (snapshots: Snapshot[]): DisplayProduct[] => {
-    return snapshots.map(snapshot => ({
-      snapshotId: snapshot.snapshotId,
-      sourceId: snapshot.sourceId,
-      productId: snapshot.productId,
-      brandName: snapshot.brandName,
-      referenceNumber: snapshot.referenceNumber,
-      modelName: snapshot.modelName,
-      platform: snapshot.platform,
-      turnoverCategory: null,
+  const processSnapshotsToDisplayProducts = (snapshots: Snapshot[] | WatchPriceData[]): DisplayProduct[] => {
+    return (snapshots as WatchPriceData[]).map(watch => ({
+      brandName: watch.brand_name,
+      modelName: watch.model_name,
+      referenceNumber: watch.reference_number,
+      turnoverCategory: watch.turnover_category,
+      avgPrice: watch.avg_price,
+      minPrice: watch.min_price,
+      maxPrice: watch.max_price,
+      currency: watch.currency,
+      dataPoints: watch.data_points,
+      dataSources: watch.data_sources,
     }));
-  };
-
-  // Fungsi untuk memperbarui turnover category secara lokal
-  const updateTurnoverCategory = (productId: string, newTurnover: string | null) => {
-    setDisplayData(prevData =>
-      prevData.map(item =>
-        item.productId === productId ? { ...item, turnoverCategory: newTurnover } : item
-      )
-    );
-    toast({
-      title: "Turnover Category Updated",
-      description: `Turnover category for product ${productId} set to ${newTurnover || "Not Set"}`,
-      duration: 2000,
-    });
   };
 
   const applyFilters = () => {
@@ -124,7 +124,11 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
     setColumnFilters(pendingColumnFilters);
     setIsFiltering(true);
     setIsQueryLoading(true);
-    setFilteredSourceIds(undefined);
+
+    // Only reset filtered source IDs if we're not using direct API filtering
+    if (!brandIds.length && !modelIds.length && !productIds.length) {
+      setFilteredSourceIds(undefined);
+    }
 
     toast({
       title: "Applying filters",
@@ -167,13 +171,18 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const table = useReactTable({
     data: displayData as TData[],
-    columns: columns(updateTurnoverCategory), // Kirim fungsi ke columns
+    columns: columns((productId, newTurnover) => updateTurnoverCategory({ productId, newTurnover })),
     getCoreRowModel: getCoreRowModel(),
+    state: {
+      columnVisibility: {
+        currency: false,
+      },
+    },
   })
 
   return (
     <>
-      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 py-4">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 py-2">
         <div className="flex flex-wrap gap-2">
           <DataTableFacetedFilter
             title="Brand"
