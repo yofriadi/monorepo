@@ -7,7 +7,7 @@ import { extractListing } from "../script/scrape_and_crawl";
 import { firecrawlQueue } from "./queue";
 import { Snapshot, ExtractedListingData } from "../types";
 import {
-  MAX_RUNS_PER_MINUTE,
+  MAX_RUNS_PER_WINDOW,
   RATE_LIMIT_WINDOW_MS,
   TASK_PRODUCT_LISTING_EXTRACTION,
 } from "../constant";
@@ -26,7 +26,7 @@ export const productListingExtractionTask = task({
       await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOW_MS));
 
       // Process detail snapshots with rate limiting
-      const batchSize = Math.min(MAX_RUNS_PER_MINUTE, 10); // Ensure batch size doesn't exceed rate limit
+      const batchSize = MAX_RUNS_PER_WINDOW; // Ensure batch size doesn't exceed rate limit
       for (let i = 0; i < detailSnapshots.length; i += batchSize) {
         const batch = detailSnapshots.slice(i, i + batchSize);
 
