@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { addDays, format, subDays, isSameDay } from "date-fns"
+import { format, subDays, isSameDay } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
@@ -75,7 +75,7 @@ export function DatePickerWithRange({
 
   const isPresetActive = (preset: PresetDate) => {
     if (!date?.from || !date?.to) return false
-    return isSameDay(preset.range.from, date.from) && isSameDay(preset.range.to, date.to)
+    return preset.range.from && preset.range.to && date.from && date.to && isSameDay(preset.range.from, date.from) && isSameDay(preset.range.to, date.to)
   }
 
   return (
