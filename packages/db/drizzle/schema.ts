@@ -1,7 +1,8 @@
-import { pgSchema, index, foreignKey, unique, check, text, varchar, timestamp, jsonb, numeric, boolean } from "drizzle-orm/pg-core"
+import { pgTable, pgSchema, index, foreignKey, unique, check, text, varchar, timestamp, jsonb, numeric, boolean } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const watchScraping = pgSchema("watch_scraping");
+
 
 export const modelsInWatchScraping = watchScraping.table("models", {
 	id: text('id').default(sql`typeid_generate_text('model'::text)`).primaryKey().notNull(),
@@ -100,20 +101,3 @@ export const brandsInWatchScraping = watchScraping.table("brands", {
 	check("brands_id_check", sql`CHECK (typeid_check_text(id, 'brand'::text`),
 ]);
 
-export const unifiedSnapshotPricesInWatchScraping = watchScraping.view("unified_snapshot_prices", {
-	id: text(),
-	dataSource: text("data_source"),
-	brandName: varchar("brand_name", { length: 50 }),
-	modelName: varchar("model_name", { length: 50 }),
-	referenceNumber: varchar("reference_number", { length: 50 }),
-	currency: text(),
-	price: numeric(),
-	location: text(),
-	yearOfProduction: text("year_of_production"),
-	hasBox: boolean("has_box"),
-	hasPapers: boolean("has_papers"),
-	conditionStatus: text("condition_status"),
-	dialColor: text("dial_color"),
-	braceletMaterial: text("bracelet_material"),
-	timeRange: text("time_range"),
-}).as(sql`WITH snapshot_with_sources AS ( SELECT s.id, s.extracted_data, s.created_at AS snapshot_date, s.extracted_data ->> 'from'::text AS data_source, COALESCE(s.source_id, p_1.source_id) AS effective_source_id FROM watch_scraping.snapshots s LEFT JOIN watch_scraping.snapshots p_1 ON s.parent_id = p_1.id WHERE s.extracted_data IS NOT NULL ) SELECT sws.id, sws.data_source, b.name AS brand_name, m.name AS model_name, p.reference_number, (sws.extracted_data -> 'price'::text) ->> 'currency'::text AS currency, CASE WHEN sws.data_source = 'carousell'::text THEN NULLIF((sws.extracted_data -> 'price'::text) ->> 'amount'::text, ''::text)::numeric WHEN sws.data_source = 'chrono24'::text THEN NULLIF(regexp_replace(sws.extracted_data ->> 'price'::text, '[^0-9\.]'::text, ''::text, 'g'::text), ''::text)::numeric ELSE NULL::numeric END AS price, CASE WHEN sws.data_source = 'chrono24'::text THEN split_part(((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Location'::text, ','::text, 1) WHEN sws.data_source = 'carousell'::text THEN 'Singapore'::text ELSE NULL::text END AS location, CASE WHEN sws.data_source = 'chrono24'::text THEN CASE WHEN (((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Year of production'::text) = 'Unknown'::text OR (((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Year of production'::text) IS NULL THEN NULL::text ELSE regexp_replace(COALESCE(((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Year of production'::text, ''::text), '[^0-9]'::text, ''::text, 'g'::text) END WHEN sws.data_source = 'carousell'::text THEN CASE WHEN ((sws.extracted_data -> 'description'::text) ->> 'Dated'::text) IS NOT NULL THEN "substring"((sws.extracted_data -> 'description'::text) ->> 'Dated'::text, '[0-9]{4}'::text) ELSE NULL::text END ELSE NULL::text END AS year_of_production, CASE WHEN sws.data_source = 'chrono24'::text THEN (EXISTS ( SELECT 1 FROM jsonb_array_elements_text( CASE WHEN jsonb_typeof(sws.extracted_data -> 'condition'::text) = 'array'::text THEN sws.extracted_data -> 'condition'::text ELSE to_jsonb(ARRAY[sws.extracted_data ->> 'condition'::text]) END) cond(value) WHERE cond.value ~~* '%box%'::text)) OR COALESCE(((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Scope of delivery'::text, ''::text) ~~* '%box%'::text WHEN sws.data_source = 'carousell'::text THEN COALESCE((sws.extracted_data -> 'description'::text) ->> 'Original Box'::text, ''::text) ~~* '%yes%'::text ELSE false END AS has_box, CASE WHEN sws.data_source = 'chrono24'::text THEN (EXISTS ( SELECT 1 FROM jsonb_array_elements_text( CASE WHEN jsonb_typeof(sws.extracted_data -> 'condition'::text) = 'array'::text THEN sws.extracted_data -> 'condition'::text ELSE to_jsonb(ARRAY[sws.extracted_data ->> 'condition'::text]) END) cond(value) WHERE cond.value ~~* '%papers%'::text OR cond.value ~~* '%certificate%'::text)) OR COALESCE(((sws.extracted_data -> 'productInformation'::text) -> 'Basic Info'::text) ->> 'Scope of delivery'::text, ''::text) ~~* '%papers%'::text WHEN sws.data_source = 'carousell'::text THEN COALESCE((sws.extracted_data -> 'description'::text) ->> 'Original Cert/Papers'::text, ''::text) ~~* '%yes%'::text ELSE false END AS has_papers, CASE WHEN sws.data_source = 'chrono24'::text THEN sws.extracted_data ->> 'condition'::text WHEN sws.data_source = 'carousell'::text THEN (sws.extracted_data -> 'details'::text) ->> 'condition'::text ELSE NULL::text END AS condition_status, CASE WHEN sws.data_source = 'chrono24'::text THEN ((sws.extracted_data -> 'productInformation'::text) -> 'Case'::text) ->> 'Dial'::text WHEN sws.data_source = 'carousell'::text THEN (sws.extracted_data -> 'description'::text) ->> 'Dial'::text ELSE NULL::text END AS dial_color, CASE WHEN sws.data_source = 'chrono24'::text THEN ((sws.extracted_data -> 'productInformation'::text) -> 'Bracelet/strap'::text) ->> 'Bracelet material'::text WHEN sws.data_source = 'carousell'::text THEN (sws.extracted_data -> 'description'::text) ->> 'Material'::text ELSE NULL::text END AS bracelet_material, CASE WHEN sws.snapshot_date > (CURRENT_DATE - '1 mon'::interval) THEN '1_month'::text WHEN sws.snapshot_date > (CURRENT_DATE - '3 mons'::interval) THEN '3_month'::text WHEN sws.snapshot_date > (CURRENT_DATE - '6 mons'::interval) THEN '6_month'::text WHEN sws.snapshot_date > (CURRENT_DATE - '1 year'::interval) THEN '1_year'::text ELSE 'older'::text END AS time_range FROM snapshot_with_sources sws LEFT JOIN watch_scraping.sources src ON sws.effective_source_id = src.id LEFT JOIN watch_scraping.products p ON src.product_id = p.id LEFT JOIN watch_scraping.models m ON p.model_id = m.id LEFT JOIN watch_scraping.brands b ON m.brand_id = b.id`);

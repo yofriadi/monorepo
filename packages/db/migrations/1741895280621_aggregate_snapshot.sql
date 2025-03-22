@@ -22,7 +22,7 @@ WITH
     snapshot_products AS (
         SELECT
             sws.*,
-            src.product_id,
+            prod.id AS product_id,
             prod.reference_number,
             prod.turnover_category,
             prod.model_id,
@@ -38,11 +38,15 @@ WITH
     )
 SELECT
     sp.id,
+    sp.product_id,
+    sp.model_id,
+    sp.brand_id,
     sp.data_source,
     sp.brand_name,
     sp.model_name,
     sp.reference_number,
     sp.turnover_category,
+    sp.snapshot_date,
     sp.extracted_data -> 'price' ->> 'currency' AS currency,
     CASE
         WHEN sp.data_source = 'carousell' THEN
@@ -125,10 +129,7 @@ SELECT
         WHEN sp.snapshot_date > CURRENT_DATE - INTERVAL '6 months' THEN '6_month'
         WHEN sp.snapshot_date > CURRENT_DATE - INTERVAL '1 year' THEN '1_year'
         ELSE 'older'
-    END AS time_range,
-    sp.product_id,
-    sp.model_id,
-    sp.brand_id
+    END AS time_range
 FROM
     snapshot_products sp;
 

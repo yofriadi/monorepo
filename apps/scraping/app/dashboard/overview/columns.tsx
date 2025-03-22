@@ -48,9 +48,9 @@ export const columns = (updateTurnoverCategory: (productId: string, newTurnover:
   {
     id: "lastScrapedDate",
     header: "Last Scraped Date",
-    accessorFn: (row: DisplayProduct) => row.updatedAt || row.createdAt,
+    accessorFn: (row: DisplayProduct) => row.lastScrapedDate,
     cell: ({ row }) => {
-      const date = row.original.updatedAt || row.original.createdAt;
+      const date = row.original.lastScrapedDate;
       return date ? new Date(date).toLocaleDateString() : '';
     },
     filterFn: "inNumberRange",

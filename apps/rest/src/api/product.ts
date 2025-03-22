@@ -1,6 +1,5 @@
 import { Elysia, t } from 'elysia'
 import { eq, inArray, sql, aliasedTable } from 'drizzle-orm'
-import *  as changeKeys from 'change-case/keys'
 import { db } from "@workspace/db";
 import {
   brandsInWatchScraping,
@@ -9,7 +8,12 @@ import {
   sourcesInWatchScraping,
   snapshotsInWatchScraping
 } from "@workspace/db/drizzle/schema";
-import { TurnoverCategory } from "../types";
+
+enum TurnoverCategory {
+  FAST = 'fast',
+  MODERATE = 'moderate',
+  SLOW = 'slow'
+}
 
 class Product {
   constructor(public db) {}
@@ -26,62 +30,49 @@ class Product {
   }
 
   async getById(id: string) {
-    const { rows } = await db.execute(
-      sql`
-        SELECT
-          brand.name AS brand_name,
-          model.name AS model_name,
-          product.reference_number AS product_reference_number,
-          source.platform,
-          child_snapshot.url,
-          child_snapshot.created_at,
-          child_snapshot.extracted_data ->> 'currency' AS currency,
-          child_snapshot.extracted_data ->> 'price' AS price,
-          (
-            SELECT string_agg(link, ', ')
-            FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
-          ) AS images
-        FROM
-          watch_scraping.products product
-          LEFT JOIN watch_scraping.models model ON product.model_id = model.id
-          LEFT JOIN watch_scraping.brands brand ON model.brand_id = brand.id
-          LEFT JOIN watch_scraping.sources source ON source.product_id = product.id
-          LEFT JOIN watch_scraping.snapshots snapshot ON snapshot.source_id = source.id
-          LEFT JOIN watch_scraping.snapshots child_snapshot ON child_snapshot.parent_id = snapshot.id
-        WHERE
-          product.id = ${id}
-          AND child_snapshot.extracted_data ->> 'currency' IS NOT NULL
-          AND child_snapshot.extracted_data ->> 'price' IS NOT NULL
-          AND (
-            SELECT string_agg(link, ', ')
-            FROM jsonb_array_elements_text(child_snapshot.extracted_data -> 'imageCarouselLinks') AS link
-          ) IS NOT NULL;
-      `
-    );
+    const products = await this.db
+      .select()
+      .from(productsInWatchScraping)
+      .where(eq(productsInWatchScraping.id, id))
+      .limit(1)
+    if (products.length === 0) throw new Error('Product not found')
+    return products[0]
+  }
 
-    /*const parentSnapshot = aliasedTable(snapshotsInWatchScraping, 'parent_snapshot');
+  async getSnapshotByProductId(id: string, filters?: { condition?: string; year?: string }) {
     const childSnapshot = aliasedTable(snapshotsInWatchScraping, 'child_snapshot');
-    const products = await db
+    const snapshots = await this.db
       .select({
         brandName: brandsInWatchScraping.name,
         modelName: modelsInWatchScraping.name,
-        referenceNumber: productsInWatchScraping.referenceNumber,
+        productReferenceNumber: productsInWatchScraping.referenceNumber,
         platform: sourcesInWatchScraping.platform,
         url: childSnapshot.url,
         createdAt: childSnapshot.createdAt,
-        currency: sql`${childSnapshot.extracted_data} ->> 'currency'`,
-        price: sql`${childSnapshot.extracted_data} ->> 'price'`,
+        currency: sql`${childSnapshot.extractedData} -> 'price' ->> 'currency'`,
+        price: sql`${childSnapshot.extractedData} -> 'price' ->> 'amount'`,
+        dial: sql`COALESCE(${childSnapshot.extractedData} -> 'productInformation' -> 'Case' ->> 'Dial', ${childSnapshot.extractedData} ->> 'dial')`,
+        caseDiameter: sql`${childSnapshot.extractedData} -> 'productInformation' -> 'Case' ->> 'Case diameter'`,
+        caseMaterial: sql`COALESCE(${childSnapshot.extractedData} -> 'productInformation' -> 'Case' ->> 'Case material', ${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Case material')`,
+        yearOfProduction: sql`${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Year of production'`,
+        scopeOfDelivery: sql`${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Scope of delivery'`,
+        location: sql`${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Location'`,
+        condition: sql`COALESCE(${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Condition', ${childSnapshot.extractedData} ->> 'condition')`,
+        source: sql`${childSnapshot.extractedData} ->> 'from'`,
+        images: sql`(
+          SELECT string_agg(link, ', ')
+          FROM jsonb_array_elements_text(${childSnapshot.extractedData} -> 'imageCarouselLinks') AS link
+        )`,
       })
       .from(productsInWatchScraping)
-      .leftJoin(sourcesInWatchScraping, eq(sourcesInWatchScraping.productId, productsInWatchScraping.id))
-      .leftJoin(parentSnapshot, eq(parentSnapshot.sourceId, sourcesInWatchScraping.id))
-      .leftJoin(childSnapshot, eq(childSnapshot.sourceId, parentSnapshot.id))
       .leftJoin(modelsInWatchScraping, eq(productsInWatchScraping.modelId, modelsInWatchScraping.id))
       .leftJoin(brandsInWatchScraping, eq(modelsInWatchScraping.brandId, brandsInWatchScraping.id))
-      .where(eq(productsInWatchScraping.id, id));*/
-
-    if (rows.length === 0) throw new Error('Product not found')
-    return rows.map(row => changeKeys.camelCase(row))
+      .leftJoin(sourcesInWatchScraping, eq(sourcesInWatchScraping.productId, productsInWatchScraping.id))
+      .leftJoin(snapshotsInWatchScraping, eq(snapshotsInWatchScraping.sourceId, sourcesInWatchScraping.id))
+      .leftJoin(childSnapshot, eq(childSnapshot.parentId, snapshotsInWatchScraping.id))
+      .where(eq(productsInWatchScraping.id, id));
+    if (!snapshots.length) throw new Error('Snapshots not found')
+    return snapshots
   }
 
   async create(data: { modelId: string; referenceNumber: string }) {
@@ -128,6 +119,21 @@ export const product = new Elysia()
   .get('/product/:id', async ({ product, params: { id }, error }) => {
     try {
       return await product.getById(id)
+    } catch {
+      return error(404, 'Product not found')
+    }
+  },
+  {
+    params: t.Object({
+      id: t.String(),
+    }),
+    detail: {
+      tags: ['Product']
+    }
+  })
+  .get('/product/:id/snapshots', async ({ product, params: { id }, error }) => {
+    try {
+      return await product.getSnapshotByProductId(id)
     } catch {
       return error(404, 'Product not found')
     }

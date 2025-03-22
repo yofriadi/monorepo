@@ -102,16 +102,18 @@ export function DataTable<TData, TValue>({ columns }: DataTableProps<TData>) {
 
   const processSnapshotsToDisplayProducts = (snapshots: Snapshot[] | WatchPriceData[]): DisplayProduct[] => {
     return (snapshots as WatchPriceData[]).map(watch => ({
-      brandName: watch.brand_name,
-      modelName: watch.model_name,
-      referenceNumber: watch.reference_number,
-      turnoverCategory: watch.turnover_category,
-      avgPrice: watch.avg_price,
-      minPrice: watch.min_price,
-      maxPrice: watch.max_price,
+      productId: watch.productId,
+      brandName: watch.brandName,
+      modelName: watch.modelName,
+      referenceNumber: watch.referenceNumber,
+      turnoverCategory: watch.turnoverCategory,
+      avgPrice: watch.avgPrice,
+      minPrice: watch.minPrice,
+      maxPrice: watch.maxPrice,
       currency: watch.currency,
-      dataPoints: watch.data_points,
-      dataSources: watch.data_sources,
+      dataPoints: watch.dataPoints,
+      dataSources: watch.dataSources,
+      lastScrapedDate: watch.lastScrapedDate,
     }));
   };
 

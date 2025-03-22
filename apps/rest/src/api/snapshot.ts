@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia'
 import { eq } from 'drizzle-orm'
 import { db } from "@workspace/db";
+import *  as changeKeys from 'change-case/keys'
 import { snapshotsInWatchScraping } from "@workspace/db/drizzle/schema";
 import { TurnoverCategory, SnapshotTimeRange, DataSource } from "../types";
 
@@ -8,60 +9,51 @@ class Snapshot {
   constructor(public db) {}
 
   async getAll({
-    brandFilter,
-    modelFilter,
-    referenceFilter,
-    yearFilter,
-    conditionFilter,
-    locationFilter,
-    dataSourceFilter,
+    brand,
+    model,
+    reference,
+    year,
+    condition,
+    location,
+    dataSource,
     timeRange,
     hasBox,
     hasPapers,
     turnover,
   }: {
-    brandFilter?: string,
-    modelFilter?: string,
-    referenceFilter?: string,
-    yearFilter?: string,
-    conditionFilter?: string,
-    locationFilter?: string,
-    dataSourceFilter?: DataSource,
+    brand?: string,
+    model?: string,
+    reference?: string,
+    year?: string,
+    condition?: string,
+    location?: string,
+    dataSource?: DataSource,
     timeRange?: SnapshotTimeRange,
     hasBox?: boolean,
     hasPapers?: boolean,
     turnover?: TurnoverCategory,
   }) {
-    const paramObj: Record<string, any> = {};
-    if (brandFilter) paramObj.brand_filter = brandFilter;
-    if (modelFilter) paramObj.model_filter = modelFilter;
-    if (referenceFilter) paramObj.reference_filter = referenceFilter;
-    if (yearFilter) paramObj.year_filter = yearFilter;
-    if (conditionFilter) paramObj.condition_filter = conditionFilter;
-    if (locationFilter) paramObj.location_filter = locationFilter;
-    if (dataSourceFilter) paramObj.data_source_filter = dataSourceFilter;
-    if (timeRange) paramObj.p_time_range = timeRange;
-    if (hasBox) paramObj.has_box_filter = hasBox;
-    if (hasPapers) paramObj.has_papers_filter = hasPapers;
-    if (turnover) paramObj.turnover_filter = turnover;
+    const param: Record<string, string | boolean> = {};
+    if (brand) param.brand_filter = brand;
+    if (model) param.model_filter = model;
+    if (reference) param.reference_filter = reference;
+    if (year) param.year_filter = year;
+    if (condition) param.condition_filter = condition;
+    if (location) param.location_filter = location;
+    if (dataSource) param.data_source_filter = dataSource;
+    if (timeRange) param.p_time_range = timeRange;
+    if (hasBox) param.has_box_filter = hasBox;
+    if (hasPapers) param.has_papers_filter = hasPapers;
+    if (turnover) param.turnover_filter = turnover;
 
-    const paramNames = Object.keys(paramObj);
+    const paramNames = Object.keys(param);
     const sqlParams = paramNames.map(name => `${name} := $${name}`).join(', ');
     const result = await this.db.execute(
-      `SELECT * FROM watch_scraping.get_snapshot_analytic(${sqlParams})`,
-      paramObj
+      `SELECT * FROM watch_scraping.get_snapshot_analytic(${sqlParams});`,
+      param
     );
-    return result.rows;
-  }
-
-  async getById(id: string) {
-    const snapshots = await this.db
-      .select()
-      .from(snapshotsInWatchScraping)
-      .where(eq(snapshotsInWatchScraping.id, id))
-      .limit(1)
-    if (snapshots.length === 0) throw new Error('Snapshot not found')
-    return snapshots[0]
+    // TODO: fix row type
+    return result.rows.map((row: any) => changeKeys.camelCase(row));
   }
 
   async create(data: { sourceId?: string; parentId?: string; url: string; extractedData?: any }) {
@@ -110,21 +102,6 @@ export const snapshot = new Elysia()
       hasBox: t.Optional(t.Boolean()),
       hasPapers: t.Optional(t.Boolean()),
       turnover: t.Optional(t.Enum(TurnoverCategory)),
-    }),
-    detail: {
-      tags: ['Snapshot']
-    }
-  })
-  .get('/snapshot/:id', async ({ snapshot, params: { id }, error }) => {
-    try {
-      return await snapshot.getById(id)
-    } catch {
-      return error(404, 'Snapshot not found')
-    }
-  },
-  {
-    params: t.Object({
-      id: t.String(),
     }),
     detail: {
       tags: ['Snapshot']

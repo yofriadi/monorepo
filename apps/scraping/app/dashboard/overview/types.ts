@@ -65,23 +65,23 @@ export type Snapshot = {
 }
 
 export interface WatchPriceData {
-  brand_name: string;
-  model_name: string;
-  reference_number: string;
-  turnover_category: TurnoverCategory | null;
-  avg_price: string;
-  min_price: string;
-  max_price: string;
+  productId: string;
+  brandName: string;
+  modelName: string;
+  referenceNumber: string;
+  turnoverCategory: TurnoverCategory | null;
+  avgPrice: string;
+  minPrice: string;
+  maxPrice: string;
   currency: string;
-  data_points: string;
-  data_sources: string[];
-  has_box: boolean;
-  has_papers: boolean;
-  condition_status: string;
-  year_of_production: string;
+  dataPoints: string;
+  dataSources: string[];
+  hasBox: boolean;
+  hasPapers: boolean;
+  conditionStatus: string;
+  yearOfProduction: string;
   location: string;
-  dial_color: string;
-  bracelet_material: string;
+  lastScrapedDate: string;
 }
 
 export interface DisplayProduct {
@@ -108,6 +108,7 @@ export interface DisplayProduct {
   conditionStatus?: string;
   yearOfProduction?: string;
   location?: string;
+  lastScrapedDate?: string;
   dialColor?: string;
   braceletMaterial?: string;
 }

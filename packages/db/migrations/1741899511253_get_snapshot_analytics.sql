@@ -1,6 +1,7 @@
 -- Up Migration
 
 CREATE OR REPLACE FUNCTION watch_scraping.get_snapshot_analytic(
+    product_id_filter TEXT DEFAULT NULL,
     brand_filter VARCHAR(50) DEFAULT NULL,
     model_filter VARCHAR(50) DEFAULT NULL,
     reference_filter VARCHAR(50) DEFAULT NULL,
@@ -14,6 +15,7 @@ CREATE OR REPLACE FUNCTION watch_scraping.get_snapshot_analytic(
     turnover_filter VARCHAR(8) DEFAULT NULL
 )
 RETURNS TABLE (
+    product_id TEXT,
     brand_name VARCHAR(50),
     model_name VARCHAR(50),
     reference_number VARCHAR(50),
@@ -28,7 +30,8 @@ RETURNS TABLE (
     has_papers BOOLEAN,
     condition_status TEXT,
     year_of_production TEXT,
-    location TEXT
+    location TEXT,
+    last_scraped_date TIMESTAMPTZ
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -36,9 +39,13 @@ BEGIN
         SELECT
 	        *
         FROM
-	        watch_scraping.aggregate_snapshot 
+	        watch_scraping.aggregate_snapshot
         WHERE
 	        price > 0
+	        AND (
+	            product_id_filter IS NULL
+	            OR product_id_filter = aggregate_snapshot.product_id
+	        )
 	        AND (
 		        brand_filter IS NULL
 		        OR aggregate_snapshot.brand_name ILIKE '%' || brand_filter || '%'
@@ -89,6 +96,7 @@ BEGIN
 	        )
     )
     SELECT
+        filtered_data.product_id,
 	    filtered_data.brand_name,
 	    filtered_data.model_name,
 	    filtered_data.reference_number,
@@ -115,10 +123,12 @@ BEGIN
 	    mode() WITHIN GROUP (
 		    ORDER BY
 			    filtered_data.location
-	    ) AS location
+	    ) AS location,
+	    MAX(snapshot_date) AS last_scraped_date
     FROM
 	    filtered_data
     GROUP BY
+        filtered_data.product_id,
 	    filtered_data.brand_name,
 	    filtered_data.model_name,
 	    filtered_data.reference_number,
