@@ -52,7 +52,7 @@ RUN pnpm install --frozen-lockfile
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Build the Next.js app in apps/scraping
+# Build for production
 RUN --mount=type=secret,id=NEXT_PUBLIC_API_URL \
     --mount=type=secret,id=NEXT_PUBLIC_STACK_PROJECT_ID \
     --mount=type=secret,id=NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY \

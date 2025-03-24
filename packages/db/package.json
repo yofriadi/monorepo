@@ -11,19 +11,19 @@
     "debug:env": "dotenvx run -f .env -- node -e 'console.log(process.env)'"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.36.0",
+    "@dotenvx/dotenvx": "^1.39.0",
     "@types/bun": "latest",
     "@types/pg": "^8.11.11",
-    "drizzle-kit": "^0.30.4",
-    "tsx": "^4.19.2"
+    "drizzle-kit": "^0.30.5",
+    "tsx": "^4.19.3"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "drizzle-orm": "^0.39.3",
+    "drizzle-orm": "^0.41.0",
     "node-pg-migrate": "^7.9.1",
-    "pg": "^8.13.3"
+    "pg": "^8.14.1"
   }
 }

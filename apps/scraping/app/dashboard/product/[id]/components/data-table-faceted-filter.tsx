@@ -41,13 +41,13 @@ export function DataTableFacetedFilter({
   const handleSelect = (value: string) => {
     const newSelectedValues = [...selectedValues];
     const index = newSelectedValues.indexOf(value);
-    
+
     if (index !== -1) {
       newSelectedValues.splice(index, 1);
     } else {
       newSelectedValues.push(value);
     }
-    
+
     onValuesChange(newSelectedValues);
   };
 

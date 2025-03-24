@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia'
-import { eq, inArray, sql, aliasedTable } from 'drizzle-orm'
+import { eq, inArray, sql, aliasedTable, and } from 'drizzle-orm'
 import { db } from "@workspace/db";
 import {
   brandsInWatchScraping,
@@ -41,7 +41,27 @@ class Product {
 
   async getSnapshotByProductId(id: string, filters?: { condition?: string; year?: string }) {
     const childSnapshot = aliasedTable(snapshotsInWatchScraping, 'child_snapshot');
-    const snapshots = await this.db
+
+    const conditions = [
+      eq(productsInWatchScraping.id, id),
+      filters?.condition 
+        ? sql`(${sql.join(
+            filters.condition.split(',').map(c => {
+              const trimmedCondition = c.trim();
+              if (trimmedCondition.toLowerCase() === 'new') {
+                return sql`COALESCE(${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Condition', ${childSnapshot.extractedData} ->> 'condition') ILIKE ${'New%'}`;
+              }
+              return sql`COALESCE(${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Condition', ${childSnapshot.extractedData} ->> 'condition') ILIKE ${'%' + trimmedCondition + '%'}`;
+            }),
+            sql` OR `
+          )})`
+        : undefined,
+      filters?.year
+        ? sql`${childSnapshot.extractedData} -> 'productInformation' -> 'Basic Info' ->> 'Year of production' = ${filters.year}`
+        : undefined,
+    ].filter(Boolean);
+
+    const query = this.db
       .select({
         brandName: brandsInWatchScraping.name,
         modelName: modelsInWatchScraping.name,
@@ -70,7 +90,9 @@ class Product {
       .leftJoin(sourcesInWatchScraping, eq(sourcesInWatchScraping.productId, productsInWatchScraping.id))
       .leftJoin(snapshotsInWatchScraping, eq(snapshotsInWatchScraping.sourceId, sourcesInWatchScraping.id))
       .leftJoin(childSnapshot, eq(childSnapshot.parentId, snapshotsInWatchScraping.id))
-      .where(eq(productsInWatchScraping.id, id));
+      .where(and(...conditions));
+
+    const snapshots = await query;
     if (!snapshots.length) throw new Error('Snapshots not found')
     return snapshots
   }
@@ -131,9 +153,12 @@ export const product = new Elysia()
       tags: ['Product']
     }
   })
-  .get('/product/:id/snapshots', async ({ product, params: { id }, error }) => {
+  .get('/product/:id/snapshots', async ({ product, params: { id }, query, error }) => {
     try {
-      return await product.getSnapshotByProductId(id)
+      return await product.getSnapshotByProductId(id, {
+        condition: query.condition,
+        year: query.year
+      })
     } catch {
       return error(404, 'Product not found')
     }
@@ -141,6 +166,10 @@ export const product = new Elysia()
   {
     params: t.Object({
       id: t.String(),
+    }),
+    query: t.Object({
+      condition: t.Optional(t.String()),
+      year: t.Optional(t.String()),
     }),
     detail: {
       tags: ['Product']
