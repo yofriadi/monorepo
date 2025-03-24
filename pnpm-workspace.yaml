@@ -2,4 +2,5 @@ packages:
   - apps/*
   - packages/*
 ignoredBuiltDependencies:
+  - esbuild
   - protobufjs
