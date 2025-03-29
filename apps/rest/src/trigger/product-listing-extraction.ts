@@ -113,7 +113,7 @@ async function processListing(snapshot: Snapshot) {
     const { detailSnapshots, nextPageSnapshot } = await processExtraction(snapshot);
 
     const batchSize = MAX_RUNS_PER_WINDOW;
-    for (let i = 0; i < 6; i += batchSize) {
+    for (let i = 0; i < detailSnapshots.length; i += batchSize) {
       const batch = detailSnapshots.slice(i, i + batchSize);
       await tasks.batchTriggerAndWait(
         NIGHT_TASK_PRODUCT_DETAIL_EXTRACTION,
