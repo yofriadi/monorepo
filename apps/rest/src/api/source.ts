@@ -9,7 +9,7 @@ import {
   snapshotsInWatchScraping,
 } from "@workspace/db/drizzle/schema";0
 import { tasks } from "@trigger.dev/sdk/v3";
-import { TASK_PRODUCT_LISTING_EXTRACTION } from "../constant";
+import { DAY_TASK_PRODUCT_LISTING_EXTRACTION } from "../constant";
 
 class Source {
   constructor(public db) {}
@@ -67,7 +67,7 @@ class Source {
         .values(payload)
         .returning();
 
-      await tasks.trigger(TASK_PRODUCT_LISTING_EXTRACTION, createdSnapshot);
+      await tasks.trigger(DAY_TASK_PRODUCT_LISTING_EXTRACTION, createdSnapshot);
 
       return createdSource;
     });

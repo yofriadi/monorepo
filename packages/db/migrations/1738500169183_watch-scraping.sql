@@ -69,7 +69,7 @@ CREATE TRIGGER update_products_updated_at
 -- Create Source table
 CREATE TABLE IF NOT EXISTS watch_scraping.sources (
     "id" text not null default typeid_generate_text('source') CHECK (typeid_check_text(id, 'source')),
-    product_id text NOT NULL,
+    product_id text NOT NULL UNIQUE,
     platform varchar(50) NOT NULL,
     created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone,

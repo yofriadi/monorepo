@@ -1,63 +1,43 @@
-import { logger, task, tasks } from "@trigger.dev/sdk/v3";
-import { eq } from "drizzle-orm";
+import { logger, task, tasks, schedules } from "@trigger.dev/sdk/v3";
+import { eq, and, isNull, isNotNull } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { snapshotsInWatchScraping } from "@workspace/db/drizzle/schema";
 
-import { extractListing } from "../script/scrape_and_crawl";
-import { firecrawlQueue } from "./queue";
-import { Snapshot, ExtractedListingData } from "../types";
+import { extractListing as extractListingScript } from "../script/scrape_and_crawl";
+import { Snapshot } from "../types";
 import {
   MAX_RUNS_PER_WINDOW,
-  RATE_LIMIT_WINDOW_MS,
-  TASK_PRODUCT_LISTING_EXTRACTION,
+  NIGHT_CRON_SCHEDULE_TIME,
+  DAY_TASK_PRODUCT_DETAIL_EXTRACTION,
+  DAY_TASK_PRODUCT_LISTING_EXTRACTION,
+  NIGHT_TASK_PRODUCT_DETAIL_EXTRACTION,
+  NIGHT_TASK_PRODUCT_LISTING_EXTRACTION,
+  SCHEDULED_TASK_PRODUCT_LISTING_EXTRACTION,
 } from "../constant";
 
-export const productListingExtractionTask = task({
-  id: TASK_PRODUCT_LISTING_EXTRACTION,
-  queue: firecrawlQueue,
+const taskConfig = {
+  maxDuration: 600, // Stop executing after 10 minutes of compute
   retry: {
     maxAttempts: 3,
   },
+};
+
+export const dayProductListingExtractionTask = task({
+  id: DAY_TASK_PRODUCT_LISTING_EXTRACTION,
+  queue: {
+    name: 'firecrawl-listing-day-queue',
+    concurrencyLimit: 1,
+  },
   run: async (snapshot: Snapshot) => {
     try {
-      const extractedResult = await extractListing(snapshot.url);
-      const { detailSnapshots, nextPageSnapshot } = await crawlDetail(snapshot, extractedResult);
+      const { detailSnapshots, nextPageSnapshot } = await processExtraction(snapshot);
 
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOW_MS));
-
-      // Process detail snapshots with rate limiting
-      const batchSize = MAX_RUNS_PER_WINDOW; // Ensure batch size doesn't exceed rate limit
-      for (let i = 0; i < detailSnapshots.length; i += batchSize) {
-        const batch = detailSnapshots.slice(i, i + batchSize);
-
-        // NOTE: the first batch scraping task is special case
-        let delay: { delay?: string } = {};
-        if (i === 0) {
-          delay.delay = `1m`;
-        } else {
-          delay = {};
-        }
-
-        await tasks.batchTriggerAndWait(
-          "product-detail-extraction",
-          batch.map(snapshot => ({ payload: snapshot, ...delay })),
-        );
-
-        // Wait for rate limit window to reset before processing next batch
-        if (i + batchSize < detailSnapshots.length) {
-          logger.info(`[LISTING TASK] Rate limiting - waiting before next batch`, { 
-            snapshotId: snapshot.id,
-            processedCount: i + batch.length,
-            totalCount: detailSnapshots.length
-          });
-          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOW_MS));
-        }
+      for (const detailSnapshot of detailSnapshots) {
+        await tasks.triggerAndWait(DAY_TASK_PRODUCT_DETAIL_EXTRACTION, detailSnapshot);
       }
 
-      // Add trigger for next page if it exists
       if (nextPageSnapshot) {
-        // NOTE: There is no delay here, might want to look for the behavior
-        await tasks.trigger(TASK_PRODUCT_LISTING_EXTRACTION, nextPageSnapshot);
+        await tasks.triggerAndWait(DAY_TASK_PRODUCT_LISTING_EXTRACTION, nextPageSnapshot);
       }
 
       return {
@@ -67,29 +47,98 @@ export const productListingExtractionTask = task({
         hasNextPage: !!nextPageSnapshot
       };
     } catch (error) {
-      logger.error(`[LISTING TASK] Task failed for snapshot ${snapshot.id}`, { 
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.message : String(error),
-        snapshotId: snapshot.id,
-      });
-
-      const regex = /Status code: 429/;
-      if (error instanceof Error && error.message && regex.test(error.message)) {
-        logger.warn(`[LISTING TASK] Rate limit hit for snapshot ${snapshot.id}`, { snapshotId: snapshot.id });
-        // In Trigger.dev, we don't have a specialized rate limit error, 
-        // but we can throw a regular error that our retry mechanism will handle
-      }
-
-      throw error;
+      handleError(error, snapshot);
     }
   },
+  ...taskConfig,
 });
 
-async function crawlDetail(
-  snapshot: Snapshot,
-  extractedResult: ExtractedListingData
-) {
+export const scheduledProductListingExtractionTask = schedules.task({
+  id: SCHEDULED_TASK_PRODUCT_LISTING_EXTRACTION,
+  queue: {
+    name: 'scheduled-firecrawl-listing-queue',
+    concurrencyLimit: 1,
+  },
+  cron: {
+    pattern: NIGHT_CRON_SCHEDULE_TIME,
+    timezone: "Asia/Jakarta",
+  },
+  run: async (): Promise<{
+    success: boolean;
+    processedSnapshots: Snapshot[];
+  }> => {
+    const snapshots = await db
+      .select()
+      .from(snapshotsInWatchScraping)
+      .where(
+        and(
+          isNotNull(snapshotsInWatchScraping.sourceId),
+          isNull(snapshotsInWatchScraping.parentId)
+        )
+      );
+
+    const processedSnapshots = [];
+    for (const snapshot of snapshots) {
+      try {
+        logger.info(`[SCHEDULED LISTING TASK] Processing snapshot for url ${snapshot.url}`);
+        await processListing(snapshot);
+        processedSnapshots.push(snapshot);
+      } catch (error) {
+        logger.error(`[SCHEDULED TASK] Error processing snapshot ${snapshot.id}`, { error });
+      }
+    }
+
+    return {
+      success: true,
+      processedSnapshots,
+    };
+  },
+  ...taskConfig,
+});
+
+export const nightProductListingExtractionTask = task({
+  id: NIGHT_TASK_PRODUCT_LISTING_EXTRACTION,
+  queue: {
+    name: 'firecrawl-listing-night-queue',
+    concurrencyLimit: 1,
+  },
+  run: async (snapshot: Snapshot) => {
+    await processListing(snapshot);
+  },
+  ...taskConfig,
+});
+
+async function processListing(snapshot: Snapshot) {
+  try {
+    const { detailSnapshots, nextPageSnapshot } = await processExtraction(snapshot);
+
+    const batchSize = MAX_RUNS_PER_WINDOW;
+    for (let i = 0; i < 6; i += batchSize) {
+      const batch = detailSnapshots.slice(i, i + batchSize);
+      await tasks.batchTriggerAndWait(
+        NIGHT_TASK_PRODUCT_DETAIL_EXTRACTION,
+        batch.map((snapshot: Snapshot) => ({ payload: snapshot })),
+      );
+    }
+
+    if (nextPageSnapshot) {
+      await tasks.triggerAndWait(NIGHT_TASK_PRODUCT_LISTING_EXTRACTION, nextPageSnapshot);
+    }
+
+    return {
+      success: true,
+      snapshotId: snapshot.id,
+      processedDetailPages: detailSnapshots.length,
+      hasNextPage: !!nextPageSnapshot
+    };
+  } catch (error: unknown) {
+    handleError(error, snapshot);
+  }
+}
+
+async function processExtraction(snapshot: Snapshot) {
   let nextPageSnapshot = null;
+  const extractedResult = await extractListingScript(snapshot.url);
 
   const detailSnapshots = await db.transaction(async (tx) => {
     await tx
@@ -106,7 +155,6 @@ async function crawlDetail(
           url: extractedResult.nextPageLink,
         }).returning();
 
-      // Store the next page snapshot for trigger later
       nextPageSnapshot = createdSnapshot;
     }
 
@@ -127,3 +175,19 @@ async function crawlDetail(
   return { detailSnapshots, nextPageSnapshot };
 }
 
+function handleError(error: unknown, snapshot: Snapshot) {
+  logger.error(`[LISTING TASK] Task failed for snapshot ${snapshot.id}`, { 
+    error: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.message : String(error),
+    snapshotId: snapshot.id,
+  });
+
+  const regex = /Status code: 429/;
+  if (error instanceof Error && error.message && regex.test(error.message)) {
+    logger.warn(`[LISTING TASK] Rate limit hit for snapshot ${snapshot.id}`, { snapshotId: snapshot.id });
+    // In Trigger.dev, we don't have a specialized rate limit error, 
+    // but we can throw a regular error that our retry mechanism will handle
+  }
+
+  throw error;
+}
