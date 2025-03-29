@@ -62,12 +62,12 @@ class Source {
         sourceId: createdSource.id,
         url: data.url,
       }
-      const [createdSnapshot] = await tx
-        .insert(snapshotsInWatchScraping)
+      await tx.insert(snapshotsInWatchScraping)
         .values(payload)
         .returning();
 
-      await tasks.trigger(DAY_TASK_PRODUCT_LISTING_EXTRACTION, createdSnapshot);
+      // TODO: resource limited for now
+      //await tasks.trigger(DAY_TASK_PRODUCT_LISTING_EXTRACTION, createdSnapshot);
 
       return createdSource;
     });
