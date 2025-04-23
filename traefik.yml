@@ -1,0 +1,204 @@
+# /traefik/config/traefik.yml
+api:
+  dashboard: true
+  basePath: "/traefik"
+
+accessLog:
+  filePath: "/traefik/logs/access.log"
+
+log:
+  level: INFO
+  filePath: "/traefik/logs/traefik.log"
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: "letsencrypt"
+        domains:
+          - main: "scrapy-app.luxehouze.store"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "product@luxehouze.com"
+      storage: "/traefik/certs/acme.json"
+      tlsChallenge: true
+
+providers:
+  docker:
+    exposedByDefault: false
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
+
+# /traefik/config/dynamic/middlewares.yml
+http:
+  middlewares:
+    traefik-auth:
+      basicAuth:
+        usersFile: "/traefik/.htpasswd"
+    traefik-ratelimit:
+      rateLimit:
+        average: 50
+        burst: 25
+
+# /traefik/config/dynamic/dynamic.yml
+http:
+  routers:
+    dashboard:
+      rule: "Host(`scrapy-app.luxehouze.store`) && PathPrefix(`/traefik/`)"
+      service: "dashboard@internal"
+      middlewares:
+        - traefik-auth
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "letsencrypt"
+      priority: 10
+
+    api:
+      rule: "Host(`scrapy-app.luxehouze.store`) && PathPrefix(`/traefik/api/`)"
+      service: "api@internal"
+      middlewares:
+        - traefik-auth
+        - traefik-ratelimit
+      entryPoints:
+        - "websecure"
+      tls:
+        certResolver: "letsencrypt"
+
+# /traefik/config/dynamic/stackauth.yml
+http:
+  routers:
+    stackauth-frontend:
+      rule: "Host(`scrapy-app-auth.luxehouze.store`)"
+      entryPoints:
+        - websecure
+      service: stackauth-frontend
+      tls:
+        certResolver: letsencrypt
+    stackauth-backend:
+      rule: "Host(`scrapy-app-auth.luxehouze.store`) && PathPrefix(`/api/`)"
+      entryPoints:
+        - websecure
+      service: stackauth-backend
+      middlewares:
+        - stackauth-ratelimit
+        - strip-api
+      tls:
+        certResolver: letsencrypt
+    stackauth-static:
+      rule: "Host(`scrapy-app-auth.luxehouze.store`) && PathPrefix(`/_next/`)"
+      entryPoints:
+        - websecure
+      service: stackauth-frontend
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    stackauth-static-headers:
+      headers:
+        customResponseHeaders:
+          X-Content-Type-Options: "nosniff"
+        contentTypeNosniff: false
+    stackauth-ratelimit:
+      rateLimit:
+        average: 50
+        burst: 100
+    strip-api:
+      stripPrefix:
+        prefixes:
+          - "/api"
+
+  services:
+    stackauth-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://stackauth:8101"
+    stackauth-backend:
+      loadBalancer:
+        servers:
+          - url: "http://stackauth:8102"
+
+# /traefik/config/dynamic/triggerdotdev.yml
+http:
+  routers:
+    triggerdotdev:
+      rule: "Host(`scrapy-app-cron.luxehouze.store`)"
+      entryPoints:
+        - websecure
+      service: trigger-app
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    trigger-app:
+      loadBalancer:
+        servers:
+          - url: "http://trigger-app:3030"
+
+# /traefik/config/dynamic/scraping.yml
+http:
+  routers:
+    frontend:
+      rule: "Host(`scrapy-app.luxehouze.store`)"
+      entryPoints:
+        - websecure
+      service: app
+      tls:
+        certResolver: letsencrypt
+    frontend-static:
+      rule: "Host(`scrapy-app.luxehouze.store`) && PathPrefix(`/_next/`)"
+      entryPoints:
+        - websecure
+      service: app
+      tls:
+        certResolver: letsencrypt
+    backend-stackauth:
+      rule: "Host(`scrapy-app.luxehouze.store`) && (PathPrefix(`/api/signin`) || PathPrefix(`/api/signout`))"
+      entryPoints:
+        - websecure
+      service: app
+      tls:
+        certResolver: letsencrypt
+    backend:
+      rule: "Host(`scrapy-app.luxehouze.store`) && (PathPrefix(`/api/scraping/`) || PathPrefix(`/api/swagger`))"
+      entryPoints:
+        - websecure
+      service: api
+      middlewares:
+        - api-ratelimit
+      tls:
+        certResolver: letsencrypt
+
+  middlewares:
+    api-ratelimit:
+      rateLimit:
+        average: 50
+        burst: 100
+
+  services:
+    app:
+      loadBalancer:
+        servers:
+          - url: "http://app:3000"
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://api:3001"
+
+    # Middleware chaining
+    stackauth-chain:
+      chain:
+        middlewares:
+          - stackauth-ratelimit

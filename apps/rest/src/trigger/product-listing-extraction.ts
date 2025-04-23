@@ -176,7 +176,7 @@ async function processExtraction(snapshot: Snapshot) {
 }
 
 function handleError(error: unknown, snapshot: Snapshot) {
-  logger.error(`[LISTING TASK] Task failed for snapshot ${snapshot.id}`, { 
+  logger.error(`[LISTING TASK] Task failed for snapshot ${snapshot.id}`, {
     error: error instanceof Error ? error.message : String(error),
     stack: error instanceof Error ? error.message : String(error),
     snapshotId: snapshot.id,

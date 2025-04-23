@@ -1,0 +1,71 @@
+# RENAME THIS FILE TO compose.yml IN PRODUCTION
+
+services:
+  reverse-proxy:
+    image: traefik:v3.3
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - scraping-net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ~/scraping/logs:/traefik/logs
+      - ~/scraping/certs:/traefik/certs
+      - ~/scraping/.htpasswd:/traefik/.htpasswd:ro
+      - ~/scraping/config:/etc/traefik:ro
+      - ~/scraping/config/dynamic:/etc/traefik/dynamic:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  stackauth:
+    image: stackauth/server:latest
+    restart: unless-stopped
+    networks:
+      - scraping-net
+    env_file:
+      - stackauth.env
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - scraping-net
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  api:
+    image: ghcr.io/yofriadi/rest:6dcd130369fd49725caf5c4cf6373a2b1a3652b8
+    restart: unless-stopped
+    networks:
+      - scraping-net
+    env_file:
+      - api.env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  app:
+    image: ghcr.io/yofriadi/scraping:08a33736d27b619ea6787135f385212d2d02fab0
+    restart: unless-stopped
+    networks:
+      - scraping-net
+    env_file:
+      - app.env
+    depends_on:
+      - api
+
+volumes:
+  redis_data:
+
+networks:
+  scraping-net:
+    name: scraping-net
+    driver: bridge

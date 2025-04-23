@@ -1,0 +1,110 @@
+# RENAME THIS FILE TO compose.yml IN PRODUCTION
+
+x-webapp-env: &webapp-env
+  LOGIN_ORIGIN: &trigger-url https://scrapy-app-cron.luxehouze.store
+  APP_ORIGIN: *trigger-url
+  DEV_OTEL_EXPORTER_OTLP_ENDPOINT: &trigger-otel https://scrapy-app-cron.luxehouze.store/otel
+  ELECTRIC_ORIGIN: http://electric:3000
+
+x-worker-env: &worker-env
+  PLATFORM_HOST: trigger-app
+  PLATFORM_WS_PORT: 3030
+  SECURE_CONNECTION: "false"
+  OTEL_EXPORTER_OTLP_ENDPOINT: *trigger-otel
+
+services:
+  reverse-proxy:
+    image: traefik:v3.3
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - scraping-net
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ~/scraping/logs:/traefik/logs
+      - ~/scraping/certs:/traefik/certs
+      - ~/scraping/.htpasswd:/traefik/.htpasswd:ro
+      - ~/scraping/config:/etc/traefik:ro
+      - ~/scraping/config/dynamic:/etc/traefik/dynamic:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  trigger-app:
+    image: ghcr.io/triggerdotdev/trigger.dev:v3
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      <<: *webapp-env
+    ports:
+      - 3040:3030
+    networks:
+      - scraping-net
+    depends_on:
+      - redis
+
+  trigger-provider:
+    image: ghcr.io/triggerdotdev/provider/docker:v3
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: root
+    networks:
+      - scraping-net
+    depends_on:
+      - trigger-app
+    ports:
+      - 9021:9020
+    env_file:
+      - .env
+    environment:
+      <<: *worker-env
+      PLATFORM_SECRET: de34ead632995f788a62793a6328e0246543718edf98b399b625ed8d3d178721
+
+  trigger-coordinator:
+    image: ghcr.io/triggerdotdev/coordinator:v3
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: root
+    networks:
+      - scraping-net
+    depends_on:
+      - trigger-app
+    ports:
+      - 9020:9020
+    env_file:
+      - .env
+    environment:
+      <<: *worker-env
+      PLATFORM_SECRET: fb65bf5aeaa85724095ab4aeb5d1c9829377b721c587bf841ea852cc10b6fe1a
+
+  electric:
+    image: electricsql/electric:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Symphonic-Scalping8-Twitter@10.184.0.4:5432/triggerdotdev?sslmode=disable
+    networks:
+      - scraping-net
+    ports:
+      - 3061:3000
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - scraping-net
+    ports:
+      - 6389:6379
+
+volumes:
+  redis_data:
+
+networks:
+  scraping-net:
+    name: scraping-net
+    driver: bridge

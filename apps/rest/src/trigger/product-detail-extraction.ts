@@ -31,7 +31,7 @@ export const nightProductDetailExtractionTask = task({
   id: NIGHT_TASK_PRODUCT_DETAIL_EXTRACTION,
   queue: {
     name: 'firecrawl-detail-night-queue',
-    concurrencyLimit: 2,
+    concurrencyLimit: 3,
   },
   ...taskConfig,
 });
